@@ -9,300 +9,194 @@
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
     <style>
         :root {
-            --primary-grad: linear-gradient(45deg, #0f172a, #1e1b4b, #312e81);
+            --bg-grad: linear-gradient(45deg, #0f172a, #1e1b4b, #312e81);
             --card-grad: linear-gradient(135deg, rgba(37, 99, 235, 0.3), rgba(30, 58, 138, 0.5));
             --glass-bg: rgba(255, 255, 255, 0.03);
-            --glass-border: rgba(255,255,255,0.1);
+            --text-main: #ffffff;
+        }
+
+        .light-mode {
+            --bg-grad: linear-gradient(45deg, #f8fafc, #e2e8f0, #cbd5e1);
+            --card-grad: linear-gradient(135deg, #3b82f6, #1d4ed8);
+            --glass-bg: rgba(255, 255, 255, 0.7);
+            --text-main: #1e293b;
         }
 
         body { 
             font-family: 'Cairo', sans-serif; 
-            background: var(--primary-grad);
+            background: var(--bg-grad);
             background-attachment: fixed;
-            color: white; 
+            color: var(--text-main); 
             min-height: 100vh;
-            overflow-x: hidden;
-            -webkit-tap-highlight-color: transparent;
+            transition: all 0.5s ease;
         }
 
-        /* --- تأثير الضباب عند فتح النوافذ --- */
-        #app-container { transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); min-height: 100vh; }
-        .modal-open #app-container { filter: blur(15px) brightness(0.6); transform: scale(0.95); pointer-events: none; }
-
-        /* --- Glass Panel Generic --- */
         .glass-panel { 
             background: var(--glass-bg); 
             backdrop-filter: blur(25px); 
-            border: 1px solid var(--glass-border); 
-            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+            border: 1px solid rgba(255,255,255,0.1); 
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
         }
 
-        /* --- Flip Card Effect --- */
-        .flip-card-container { perspective: 1000px; height: 220px; margin-bottom: 2rem; cursor: pointer; }
-        .flip-card-inner {
-            position: relative; width: 100%; height: 100%; text-align: right;
-            transition: transform 0.8s; transform-style: preserve-3d;
-        }
-        .flip-card-container.flipped .flip-card-inner { transform: rotateY(180deg); }
-        .flip-card-front, .flip-card-back {
-            position: absolute; width: 100%; height: 100%;
-            -webkit-backface-visibility: hidden; backface-visibility: hidden;
-            border-radius: 2.5rem; padding: 2rem;
+        .credit-card { 
             background: var(--card-grad);
             border: 1px solid rgba(255,255,255,0.2);
             box-shadow: 0 20px 50px rgba(0,0,0,0.3);
         }
-        .flip-card-back { transform: rotateY(180deg); background: linear-gradient(135deg, #1e293b, #0f172a); display: flex; flex-direction: column; justify-content: center; }
 
-        /* --- Warning Glow for Budget --- */
-        .budget-warning .flip-card-front { border: 2px solid #ef4444; box-shadow: 0 0 20px rgba(239, 68, 68, 0.4); }
+        .budget-alert { border: 2px solid #ef4444; box-shadow: 0 0 20px rgba(239, 68, 68, 0.5); }
 
-        /* --- Sorting Chips --- */
-        .chips-container { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 10px; scrollbar-width: none; margin-bottom: 10px; }
-        .chip { background: rgba(255,255,255,0.1); padding: 8px 16px; border-radius: 20px; font-size: 12px; font-weight: bold; white-space: nowrap; border: 1px solid transparent; transition: 0.3s; }
-        .chip.active { background: #3b82f6; border-color: #60a5fa; }
-
-        /* --- Progress Bar --- */
-        .progress-track { width: 100%; height: 4px; background: rgba(255,255,255,0.1); border-radius: 2px; margin-top: 8px; overflow: hidden; }
-        .progress-fill { height: 100%; border-radius: 2px; transition: width 0.5s ease; }
-
-        /* --- Calendar --- */
-        .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; text-align: center; }
-        .cal-day { aspect-ratio: 1; display: flex; align-items: center; justify-content: center; border-radius: 10px; font-size: 12px; background: rgba(255,255,255,0.05); }
-        .cal-day.has-sub { background: rgba(59, 130, 246, 0.3); border: 1px solid #3b82f6; box-shadow: 0 0 10px rgba(59, 130, 246, 0.4); }
-
-        /* --- Donut Chart (CSS Only) --- */
-        .donut-chart {
-            width: 150px; height: 150px; border-radius: 50%;
-            background: conic-gradient(var(--chart-colors));
-            display: flex; justify-content: center; align-items: center;
-            margin: 0 auto;
+        .drawer { 
+            transition: 0.5s cubic-bezier(0.4, 0, 0.2, 1); 
+            transform: translateX(100%); 
+            position: fixed; top: 0; right: 0; bottom: 0; 
+            width: 80%; max-width: 320px; z-index: 2000; 
         }
-        .donut-hole { width: 100px; height: 100px; background: #0f172a; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-direction: column; }
-
-        /* --- UI Elements --- */
-        .drawer { transition: 0.4s cubic-bezier(0.4, 0, 0.2, 1); transform: translateX(100%); position: fixed; top: 0; right: 0; bottom: 0; width: 85%; max-width: 320px; z-index: 2000; }
         .drawer.active { transform: translateX(0); }
-        
+
         .overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 1500; backdrop-filter: blur(4px); }
         .overlay.active { display: block; }
 
-        .modal { display: none; position: fixed; inset: 0; z-index: 3000; align-items: center; justify-content: center; padding: 20px; }
+        .modal { display: none; position: fixed; inset: 0; z-index: 3000; align-items: center; justify-content: center; padding: 20px; backdrop-filter: blur(10px); }
         .modal.active { display: flex; }
 
-        /* --- Toast Notification --- */
-        #toast { 
-            position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%) translateY(100px); 
-            background: rgba(15, 23, 42, 0.95); border: 1px solid rgba(255,255,255,0.1); 
-            padding: 12px 24px; border-radius: 50px; z-index: 5000; 
-            font-weight: bold; font-size: 14px; opacity: 0; transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5); display: flex; align-items: center; gap: 10px;
+        .nav-chip.active { background: #3b82f6; color: white; }
+        
+        #toast {
+            position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%) translateY(100px);
+            background: rgba(0,0,0,0.8); padding: 12px 25px; border-radius: 50px;
+            z-index: 5000; transition: 0.4s; opacity: 0;
         }
         #toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
-
-        .section { display: none; animation: fadeIn 0.4s ease; }
-        .section.active { display: block; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
-<body class="pb-20">
+<body class="pb-10">
 
-    <div id="overlay" class="overlay" onclick="closeAll()"></div>
+    <div id="overlay" class="overlay" onclick="toggleDrawer()"></div>
+    <div id="toast" class="glass-panel text-white font-bold text-sm">تمت العملية بنجاح!</div>
 
-    <div id="toast"><span id="toast-icon">🔔</span> <span id="toast-msg">تمت العملية</span></div>
+    <div class="p-6 flex justify-between items-center relative z-10">
+        <button onclick="toggleDrawer()" class="p-3 glass-panel rounded-2xl active:scale-90 transition">
+            <img src="https://cdn-icons-png.flaticon.com/512/8166/8166544.png" class="w-6 h-6 invert" id="iconMenu">
+        </button>
+        <h1 class="text-xl font-black tracking-widest text-blue-400">SUB MANAGER</h1>
+        <button onclick="toggleTheme()" class="p-3 glass-panel rounded-2xl active:scale-90 transition" id="themeBtn">🌙</button>
+    </div>
 
-    <div id="app-container">
-        <div class="p-6 flex justify-between items-center relative z-10">
-            <button onclick="toggleDrawer()" class="p-3 glass-panel rounded-2xl active:scale-90 transition">
-                <img src="https://cdn-icons-png.flaticon.com/512/8166/8166544.png" class="w-6 h-6 invert">
-            </button>
-            <h1 class="text-xl font-black tracking-widest text-blue-400">SUB MANAGER</h1>
-            <div class="w-10"></div>
+    <div class="max-w-md mx-auto px-6">
+        <div id="mainCard" class="credit-card rounded-[2.5rem] p-8 text-white mb-8 relative overflow-hidden transition-all duration-500">
+            <div class="flex justify-between items-start mb-10">
+                <div>
+                    <p class="text-blue-200 text-[10px] font-bold mb-1 uppercase tracking-widest">إجمالي المصاريف الشهرية</p>
+                    <h2 id="totalDisplay" class="text-4xl font-black">0</h2>
+                </div>
+                <img src="https://cdn-icons-png.flaticon.com/512/9334/9334611.png" class="w-12 opacity-80">
+            </div>
+            <div class="flex justify-between items-end">
+                <div>
+                    <p class="text-[9px] opacity-60 uppercase mb-1">الميزانية: <span id="budgetView">∞</span></p>
+                    <div class="flex -space-x-2">
+                        <div class="w-8 h-8 rounded-full bg-orange-500 border border-white/20"></div>
+                        <div class="w-8 h-8 rounded-full bg-red-600 border border-white/20"></div>
+                    </div>
+                </div>
+                <p class="text-[10px] font-bold tracking-tighter opacity-40">ULTRA GLASS EDITION</p>
+            </div>
         </div>
 
-        <div class="max-w-md mx-auto px-6">
-            
-            <div class="flip-card-container" onclick="this.classList.toggle('flipped')">
-                <div class="flip-card-inner">
-                    <div class="flip-card-front">
-                        <div class="flex justify-between items-start mb-8">
-                            <div>
-                                <p class="text-blue-300 text-[10px] font-bold mb-1 uppercase tracking-widest">المصاريف الشهرية</p>
-                                <h2 id="totalDisplay" class="text-4xl font-black">0</h2>
-                            </div>
-                            <img src="https://cdn-icons-png.flaticon.com/512/9334/9334611.png" class="w-12 opacity-80">
-                        </div>
-                        <div class="flex justify-between items-end">
-                            <div>
-                                <p class="text-[9px] opacity-60 mb-1">الميزانية: <span id="budgetDisplay">غير محددة</span></p>
-                                <div class="flex -space-x-2">
-                                    <div class="w-8 h-8 rounded-full bg-orange-500/80 border border-white/10 shadow-lg"></div>
-                                    <div class="w-8 h-8 rounded-full bg-red-600/80 border border-white/10 shadow-lg"></div>
-                                </div>
-                            </div>
-                            <span class="text-[9px] bg-white/10 px-2 py-1 rounded">اضغط للتفاصيل ↻</span>
-                        </div>
-                    </div>
-                    <div class="flip-card-back">
-                        <h3 class="text-lg font-bold text-blue-400 mb-4 border-b border-white/10 pb-2">نظرة عامة</h3>
-                        <div class="flex justify-between mb-2">
-                            <span class="text-xs opacity-70">المصروف السنوي المتوقع:</span>
-                            <span id="annualTotal" class="text-sm font-bold">0</span>
-                        </div>
-                        <div class="flex justify-between mb-2">
-                            <span class="text-xs opacity-70">عدد الاشتراكات:</span>
-                            <span id="subsCount" class="text-sm font-bold">0</span>
-                        </div>
-                        <div class="flex justify-between">
-                            <span class="text-xs opacity-70">أكثر فئة:</span>
-                            <span id="topCategory" class="text-sm font-bold text-green-400">-</span>
-                        </div>
-                    </div>
+        <div class="flex gap-2 mb-6 overflow-x-auto pb-2 no-scrollbar">
+            <button onclick="switchView('list')" class="nav-chip active px-5 py-2 glass-panel rounded-full text-xs font-bold transition">الاشتراكات</button>
+            <button onclick="switchView('stats')" class="nav-chip px-5 py-2 glass-panel rounded-full text-xs font-bold transition">التحليل</button>
+            <button onclick="switchView('archive')" class="nav-chip px-5 py-2 glass-panel rounded-full text-xs font-bold transition">الأرشيف</button>
+        </div>
+
+        <div id="listSection" class="view-content space-y-4">
+            <div id="subList" class="space-y-4"></div>
+        </div>
+
+        <div id="statsSection" class="view-content hidden space-y-4">
+            <div class="glass-panel p-6 rounded-[2.5rem]">
+                <div class="flex items-center gap-3 mb-6">
+                    <img src="https://cdn-icons-png.flaticon.com/512/4221/4221419.png" class="w-6 h-6 invert">
+                    <h3 class="font-bold">تحليل النفقات</h3>
                 </div>
+                <div id="statsContent" class="space-y-5"></div>
             </div>
+        </div>
 
-            <div id="chipsSection" class="chips-container section active">
-                <div class="chip active" onclick="sortSubs('date', this)">الأقرب</div>
-                <div class="chip" onclick="sortSubs('priceHigh', this)">الأغلى</div>
-                <div class="chip" onclick="sortSubs('priceLow', this)">الأرخص</div>
-                <div class="chip" onclick="sortSubs('name', this)">أ-ي</div>
+        <div id="archiveSection" class="view-content hidden space-y-4">
+            <div class="flex items-center gap-3 mb-2 px-2">
+                <img src="https://cdn-icons-png.flaticon.com/512/2983/2983672.png" class="w-5 h-5 opacity-50 invert">
+                <h3 class="text-sm font-bold opacity-50">المدفوعات السابقة</h3>
             </div>
-
-            <div id="listSection" class="section active space-y-4">
-                <div id="subList" class="space-y-4 min-h-[200px]"></div>
-            </div>
-
-            <div id="calendarSection" class="section glass-panel p-6 rounded-[2rem]">
-                <h3 class="text-center font-bold mb-6 text-blue-400">تقويم الدفعات</h3>
-                <div class="calendar-grid" id="calendarGrid"></div>
-                <p class="text-[10px] text-center mt-4 opacity-50">الأيام المضيئة تحتوي على استحقاقات</p>
-            </div>
-
-            <div id="chartsSection" class="section glass-panel p-6 rounded-[2rem] text-center">
-                <h3 class="font-bold mb-6 text-blue-400">توزيع المصاريف</h3>
-                <div class="donut-chart" id="categoryChart">
-                    <div class="donut-hole">
-                        <span class="text-xs opacity-50">الأكثر</span>
-                        <span id="chartTopLabel" class="font-bold text-sm">...</span>
-                    </div>
-                </div>
-                <div id="chartLegend" class="mt-6 flex flex-wrap justify-center gap-3"></div>
-            </div>
-
-            <div id="archiveSection" class="section space-y-4">
-                <h3 class="text-center font-bold mb-4 opacity-70">سجل المدفوعات (الأرشيف)</h3>
-                <div id="archiveList" class="space-y-3 opacity-80"></div>
-            </div>
-
+            <div id="archiveList" class="space-y-3 opacity-60"></div>
         </div>
     </div>
 
-    <div id="drawer" class="drawer glass-panel p-6 shadow-2xl flex flex-col">
-        <div class="flex justify-between items-center mb-8">
-            <h2 class="text-xl font-black text-blue-400">القائمة</h2>
-            <button onclick="toggleDrawer()" class="text-2xl opacity-40 hover:opacity-100">×</button>
+    <div id="drawer" class="drawer glass-panel p-8 shadow-2xl flex flex-col">
+        <div class="flex justify-between items-center mb-10">
+            <h2 class="text-xl font-black text-blue-400">الإعدادات</h2>
+            <button onclick="toggleDrawer()" class="text-2xl opacity-40">×</button>
         </div>
         
-        <nav class="space-y-2 flex-1 overflow-y-auto">
-            <button onclick="switchSection('listSection')" class="w-full flex items-center gap-4 p-4 rounded-xl hover:bg-white/10 transition font-bold text-right">
-                🏠 الرئيسية
-            </button>
-            <button onclick="openModal()" class="w-full flex items-center gap-4 p-4 rounded-xl bg-blue-600/20 text-blue-400 font-bold text-right">
-                ➕ إضافة اشتراك
-            </button>
-            <button onclick="switchSection('calendarSection')" class="w-full flex items-center gap-4 p-4 rounded-xl hover:bg-white/10 transition font-bold text-right">
-                📅 التقويم
-            </button>
-            <button onclick="switchSection('chartsSection')" class="w-full flex items-center gap-4 p-4 rounded-xl hover:bg-white/10 transition font-bold text-right">
-                📊 التحليل
-            </button>
-            <button onclick="switchSection('archiveSection')" class="w-full flex items-center gap-4 p-4 rounded-xl hover:bg-white/10 transition font-bold text-right">
-                📜 الأرشيف
-            </button>
-
-            <div class="mt-6 p-4 rounded-xl bg-white/5 border border-white/5">
-                <label class="text-xs text-gray-400 block mb-2">حد الميزانية</label>
-                <input type="number" id="budgetInput" onchange="setBudget()" placeholder="مثلاً 500" class="w-full bg-transparent border-b border-gray-600 p-1 text-sm outline-none text-center">
+        <div class="space-y-6 flex-1">
+            <div>
+                <label class="text-[10px] text-gray-400 font-bold uppercase block mb-2">حد الميزانية</label>
+                <input type="number" id="budgetInput" onchange="updateBudget()" placeholder="أدخل المبلغ..." class="w-full bg-white/5 border border-white/10 p-4 rounded-2xl outline-none text-sm">
             </div>
 
-            <div class="mt-6">
-                <label class="text-xs text-gray-400 block mb-2">الثيمات</label>
-                <div class="flex justify-center gap-3">
-                    <button onclick="setTheme('ocean')" class="w-8 h-8 rounded-full bg-blue-900 border-2 border-white/50"></button>
-                    <button onclick="setTheme('purple')" class="w-8 h-8 rounded-full bg-purple-900 border border-white/20"></button>
-                    <button onclick="setTheme('emerald')" class="w-8 h-8 rounded-full bg-emerald-900 border border-white/20"></button>
-                </div>
-            </div>
-            
-            <div class="mt-4">
-                <label class="text-xs text-gray-400 block mb-2">العملة</label>
-                <select id="currencySelect" onchange="changeCurrency()" class="w-full bg-white/5 border border-white/10 p-2 rounded-lg text-xs font-bold text-white">
-                    <option value="SAR">ريال سعودي (SAR)</option>
-                    <option value="USD">دولار أمريكي (USD)</option>
-                    <option value="EUR">يورو (EUR)</option>
-                    <option value="DZD">دينار جزائري (DZD)</option>
-                    <option value="AED">درهم إماراتي (AED)</option>
-                    <option value="KWD">دينار كويتي (KWD)</option>
-                    <option value="QAR">ريال قطري (QAR)</option>
-                    <option value="EGP">جنيه مصري (EGP)</option>
-                    <option value="GBP">جنيه استرليني (GBP)</option>
-                    <option value="TRY">ليرة تركية (TRY)</option>
-                    <option value="JOD">دينار أردني (JOD)</option>
-                    <option value="OMR">ريال عماني (OMR)</option>
-                    <option value="BHD">دينار بحريني (BHD)</option>
-                    <option value="MAD">درهم مغربي (MAD)</option>
-                    <option value="LYD">دينار ليبي (LYD)</option>
-                    <option value="TND">دينار تونسي (TND)</option>
-                    <option value="INR">روبية هندية (INR)</option>
-                    <option value="CNY">يوان صيني (CNY)</option>
-                    <option value="JPY">ين ياباني (JPY)</option>
-                    <option value="KRW">وون كوري (KRW)</option>
+            <div>
+                <label class="text-[10px] text-gray-400 font-bold uppercase block mb-2">العملة</label>
+                <select id="currencySelect" onchange="changeCurrency()" class="w-full bg-white/10 border border-white/10 p-4 rounded-2xl outline-none text-sm font-bold">
+                    <option value="SAR" class="text-black">SAR - ريال سعودي</option>
+                    <option value="USD" class="text-black">USD - دولار أمريكي</option>
+                    <option value="DZD" class="text-black">DZD - دينار جزائري</option>
+                    <option value="EGP" class="text-black">EGP - جنيه مصري</option>
+                    <option value="AED" class="text-black">AED - درهم إماراتي</option>
+                    <option value="EUR" class="text-black">EUR - يورو</option>
+                    <option value="KWD" class="text-black">KWD - دينار كويتي</option>
+                    <option value="QAR" class="text-black">QAR - ريال قطري</option>
+                    <option value="TRY" class="text-black">TRY - ليرة تركية</option>
                 </select>
             </div>
-        </nav>
 
-        <button onclick="exportData()" class="mt-4 w-full p-3 rounded-xl text-xs text-gray-400 bg-white/5 flex justify-center gap-2">
-            💾 حفظ نسخة احتياطية
-        </button>
+            <button onclick="openModal()" class="w-full p-5 rounded-2xl bg-blue-600 font-black text-white shadow-lg shadow-blue-600/30 flex items-center justify-center gap-3">
+                <img src="https://cdn-icons-png.flaticon.com/512/4315/4315609.png" class="w-5 h-5 invert">
+                إضافة اشتراك
+            </button>
+        </div>
+
+        <div class="pt-6 border-t border-white/5 space-y-3">
+            <button onclick="exportData()" class="w-full p-4 rounded-xl bg-white/5 text-xs text-gray-400 flex items-center justify-center gap-2">
+                <img src="https://cdn-icons-png.flaticon.com/512/2874/2874091.png" class="w-4 h-4 invert opacity-40">
+                حفظ نسخة احتياطية
+            </button>
+            <button onclick="clearAll()" class="w-full p-4 rounded-xl text-red-500 text-[10px] font-bold">مسح كافة البيانات</button>
+        </div>
     </div>
 
     <div id="addModal" class="modal">
-        <div class="glass-panel w-full max-w-sm rounded-[2.5rem] p-8 relative border border-white/20 shadow-2xl">
-            <div class="text-center mb-6">
-                <h3 class="text-xl font-black" id="modalTitle">إضافة اشتراك</h3>
-            </div>
-            <div class="space-y-3">
-                <input type="hidden" id="editIndex">
-                <input type="text" id="subName" placeholder="اسم الخدمة (مثلاً Netflix)" class="w-full p-4 rounded-2xl bg-white/5 border border-white/10 outline-none text-white focus:border-blue-500">
-                
+        <div class="glass-panel w-full max-w-sm rounded-[2.5rem] p-8 border border-white/20 shadow-2xl">
+            <h3 class="text-xl font-black text-center mb-8">اشتراك جديد</h3>
+            <div class="space-y-4">
+                <input type="text" id="subName" placeholder="الخدمة (Netflix, Spotify...)" class="w-full p-4 rounded-2xl bg-white/5 border border-white/10 outline-none">
                 <div class="flex gap-2">
-                    <input type="number" id="subPrice" placeholder="السعر" class="flex-1 p-4 rounded-2xl bg-white/5 border border-white/10 outline-none text-white focus:border-blue-500">
-                    <select id="subType" class="bg-white/5 border border-white/10 p-4 rounded-2xl text-xs font-bold outline-none text-white">
+                    <input type="number" id="subPrice" placeholder="السعر" class="flex-1 p-4 rounded-2xl bg-white/5 border border-white/10 outline-none">
+                    <select id="subType" class="bg-white/10 border border-white/10 p-4 rounded-2xl text-xs font-bold outline-none">
                         <option value="monthly" class="text-black">شهري</option>
                         <option value="annual" class="text-black">سنوي</option>
                     </select>
                 </div>
-
-                <select id="subCat" class="w-full bg-white/5 border border-white/10 p-4 rounded-2xl text-sm outline-none text-white">
-                    <option value="ترفيه" class="text-black">🎬 ترفيه</option>
-                    <option value="عمل" class="text-black">💼 عمل</option>
-                    <option value="تعليم" class="text-black">🎓 تعليم</option>
-                    <option value="صحة" class="text-black">💪 صحة</option>
-                    <option value="أخرى" class="text-black">💎 أخرى</option>
-                </select>
-
-                <input type="date" id="subDate" class="w-full p-4 rounded-2xl bg-white/5 border border-white/10 outline-none text-white">
-                
-                <button onclick="saveSub()" class="w-full bg-blue-600 text-white py-4 rounded-2xl font-black shadow-lg shadow-blue-600/30 active:scale-95 transition-all mt-2">حفظ</button>
-                <button onclick="closeModal()" class="w-full text-gray-500 font-bold text-sm mt-1">إلغاء</button>
+                <input type="date" id="subDate" class="w-full p-4 rounded-2xl bg-white/5 border border-white/10 outline-none">
+                <button onclick="saveSub()" class="w-full bg-blue-600 text-white py-4 rounded-2xl font-black active:scale-95 transition-all mt-4">تأكيد الإضافة</button>
+                <button onclick="closeModal()" class="w-full text-gray-500 font-bold text-xs">إلغاء</button>
             </div>
         </div>
     </div>
 
     <script>
-        // --- Data & State ---
         const knownLogos = {
-          'netflix': 'https://cdn-icons-png.flaticon.com/512/5977/5977590.png',
+      'netflix': 'https://cdn-icons-png.flaticon.com/512/5977/5977590.png',
             'spotify': 'https://cdn-icons-png.flaticon.com/512/2111/2111624.png',
             'tiktok': 'https://cdn-icons-png.flaticon.com/512/3046/3046121.png',
             'youtube': 'https://cdn-icons-png.flaticon.com/512/174/174883.png',
@@ -330,302 +224,164 @@
             'express vpn': 'https://img.icons8.com/?size=48&id=EYvWm4GHpQwc&format=png'
         };
 
-        // --- Core Functions ---
+        function showToast(msg) {
+            const t = document.getElementById('toast');
+            t.innerText = msg;
+            t.classList.add('show');
+            setTimeout(() => t.classList.remove('show'), 3000);
+        }
+
         function toggleDrawer() {
             document.getElementById('drawer').classList.toggle('active');
             document.getElementById('overlay').classList.toggle('active');
         }
 
-        function switchSection(secId) {
-            document.querySelectorAll('.section').forEach(el => el.classList.remove('active'));
-            document.getElementById(secId).classList.add('active');
-            if(secId === 'chipsSection') document.getElementById('listSection').classList.add('active'); // chips always with list
-            if(secId === 'calendarSection') renderCalendar();
-            if(secId === 'chartsSection') renderCharts();
-            if(secId === 'archiveSection') renderArchive();
-            toggleDrawer();
+        function openModal() { document.getElementById('addModal').classList.add('active'); toggleDrawer(); }
+        function closeModal() { document.getElementById('addModal').classList.remove('active'); }
+
+        function toggleTheme() {
+            document.body.classList.toggle('light-mode');
+            const isLight = document.body.classList.contains('light-mode');
+            document.getElementById('themeBtn').innerText = isLight ? '☀️' : '🌙';
+            localStorage.setItem('theme', isLight ? 'light' : 'dark');
+            // ضبط أيقونة المنيو
+            document.getElementById('iconMenu').style.filter = isLight ? 'none' : 'invert(1)';
         }
 
-        function showToast(msg, icon = '🔔') {
-            const t = document.getElementById('toast');
-            document.getElementById('toast-msg').innerText = msg;
-            document.getElementById('toast-icon').innerText = icon;
-            t.classList.add('show');
-            setTimeout(() => t.classList.remove('show'), 3000);
+        function switchView(view) {
+            document.querySelectorAll('.view-content').forEach(v => v.classList.add('hidden'));
+            document.querySelectorAll('.nav-chip').forEach(c => c.classList.remove('active'));
+            document.getElementById(view + 'Section').classList.remove('hidden');
+            event.target.classList.add('active');
         }
 
-        // --- Themes ---
-        function setTheme(theme) {
-            let grad = 'linear-gradient(45deg, #0f172a, #1e1b4b, #312e81)'; // Ocean
-            if(theme === 'purple') grad = 'linear-gradient(45deg, #2e1065, #4c1d95, #7e22ce)';
-            if(theme === 'emerald') grad = 'linear-gradient(45deg, #022c22, #064e3b, #065f46)';
-            document.body.style.background = grad;
-            localStorage.setItem('userTheme', theme);
-            showToast('تم تغيير الثيم', '🎨');
-        }
-
-        // --- Main Logic ---
-        function getSubs() { return JSON.parse(localStorage.getItem('mySubs') || '[]'); }
-        function getArchive() { return JSON.parse(localStorage.getItem('myArchive') || '[]'); }
-
-        function displaySubs(sortBy = 'date') {
-            const subs = getSubs();
+        function displaySubs() {
+            const subs = JSON.parse(localStorage.getItem('mySubs') || '[]');
+            const archive = JSON.parse(localStorage.getItem('myArchive') || '[]');
             const currency = localStorage.getItem('userCurrency') || 'SAR';
-            const listDiv = document.getElementById('subList');
-            const totalDisplay = document.getElementById('totalDisplay');
+            const budget = parseFloat(localStorage.getItem('userBudget') || 0);
             
-            // Sorting Logic
-            if(sortBy === 'priceHigh') subs.sort((a,b) => b.price - a.price);
-            if(sortBy === 'priceLow') subs.sort((a,b) => a.price - b.price);
-            if(sortBy === 'name') subs.sort((a,b) => a.name.localeCompare(b.name));
-            if(sortBy === 'date') subs.sort((a,b) => getDaysLeft(a.date) - getDaysLeft(b.date));
+            const listDiv = document.getElementById('subList');
+            const archiveDiv = document.getElementById('archiveList');
+            let total = 0;
 
             listDiv.innerHTML = '';
-            let total = 0;
-            let annualSum = 0;
-            let catCount = {};
+            archiveDiv.innerHTML = '';
+
+            if(subs.length === 0) {
+                listDiv.innerHTML = `<div class="text-center py-10 opacity-30 text-sm font-bold">لا توجد اشتراكات نشطة</div>`;
+            }
 
             subs.forEach((sub, index) => {
                 const monthlyPrice = sub.type === 'annual' ? (sub.price / 12) : parseFloat(sub.price);
                 total += monthlyPrice;
-                annualSum += sub.type === 'annual' ? parseFloat(sub.price) : (parseFloat(sub.price) * 12);
-                
-                // Cat Count
-                catCount[sub.category] = (catCount[sub.category] || 0) + 1;
-
-                const daysLeft = getDaysLeft(sub.date);
                 const logo = knownLogos[sub.name.toLowerCase().trim()];
                 
-                // Progress Bar Logic
-                let progressColor = 'bg-blue-500';
-                if(daysLeft <= 3) progressColor = 'bg-red-500';
-                else if(daysLeft <= 7) progressColor = 'bg-yellow-500';
-                const progressWidth = Math.max(0, Math.min(100, 100 - (daysLeft * 3.3))); // Rough 30 day scale
-
                 listDiv.innerHTML += `
-                    <div class="glass-panel p-5 rounded-[2rem] relative transition-all active:scale-95" oncontextmenu="openEdit(${index}); return false;">
-                        <div class="flex justify-between items-start">
-                            <div class="flex items-center gap-4">
-                                <div class="w-14 h-14 rounded-2xl bg-white/5 flex items-center justify-center p-2 border border-white/5">
-                                    ${logo ? `<img src="${logo}" class="w-full h-full object-contain">` : `<span class="text-xl font-black opacity-30">${sub.name.charAt(0)}</span>`}
-                                </div>
-                                <div>
-                                    <h4 class="font-bold text-white text-sm">${sub.name}</h4>
-                                    <p class="text-[10px] font-black text-blue-300 opacity-80">${monthlyPrice.toFixed(2)} ${currency} / شهر</p>
-                                    <span class="text-[9px] bg-white/10 px-2 rounded-full text-gray-300">${sub.category || 'عام'}</span>
-                                </div>
+                    <div class="glass-panel p-5 rounded-[2.2rem] flex justify-between items-center transition-all hover:scale-[1.02]">
+                        <div class="flex items-center gap-4">
+                            <div class="w-14 h-14 rounded-2xl bg-white/5 flex items-center justify-center border border-white/5 p-2">
+                                ${logo ? `<img src="${logo}" class="w-full h-full object-contain">` : `<span class="text-xl font-black opacity-30">${sub.name.charAt(0)}</span>`}
                             </div>
-                            <div class="text-left">
-                                <span class="block text-xs font-bold ${daysLeft <= 3 ? 'text-red-400 animate-pulse' : 'text-gray-400'}">باقي ${daysLeft} يوم</span>
-                                <button onclick="addToArchive(${index})" class="mt-2 text-[10px] bg-green-500/20 text-green-400 px-2 py-1 rounded hover:bg-green-500/40">تم الدفع</button>
+                            <div>
+                                <h4 class="font-bold text-sm">${sub.name}</h4>
+                                <p class="text-[10px] font-black text-blue-400">${monthlyPrice.toFixed(2)} ${currency}</p>
                             </div>
                         </div>
-                        
-                        <div class="progress-track">
-                            <div class="progress-fill ${progressColor}" style="width: ${progressWidth}%"></div>
+                        <div class="flex gap-2">
+                            <button onclick="moveToArchive(${index})" class="p-2 bg-green-500/10 rounded-xl">
+                                <img src="https://cdn-icons-png.flaticon.com/512/4436/4436481.png" class="w-4 h-4 invert opacity-70">
+                            </button>
+                            <button onclick="deleteSub(${index})" class="p-2 bg-red-500/10 rounded-xl">
+                                <img src="https://cdn-icons-png.flaticon.com/512/6861/6861362.png" class="w-4 h-4 invert opacity-70">
+                            </button>
                         </div>
                     </div>
                 `;
             });
 
-            // Card Stats
-            totalDisplay.innerText = `${total.toFixed(0)} ${currency}`;
-            document.getElementById('annualTotal').innerText = annualSum.toFixed(0);
-            document.getElementById('subsCount').innerText = subs.length;
+            archive.forEach((item) => {
+                archiveDiv.innerHTML += `
+                    <div class="glass-panel p-4 rounded-2xl flex justify-between items-center">
+                        <span class="text-xs font-bold line-through opacity-50">${item.name}</span>
+                        <span class="text-[10px] font-bold">${item.price} ${currency}</span>
+                    </div>
+                `;
+            });
+
+            document.getElementById('totalDisplay').innerText = `${total.toFixed(0)} ${currency}`;
             
-            // Top Category
-            const topCat = Object.keys(catCount).reduce((a, b) => catCount[a] > catCount[b] ? a : b, '-');
-            document.getElementById('topCategory').innerText = topCat;
-
-            // Budget Check
-            checkBudget(total);
-        }
-
-        function getDaysLeft(dateStr) {
-            const today = new Date();
-            const due = new Date(dateStr);
-            // Adjust year if date passed
-            if(today > due) due.setMonth(due.getMonth() + 1); // Simple logic: next month
-            const diff = due - today;
-            return Math.ceil(diff / (1000 * 60 * 60 * 24));
-        }
-
-        // --- Budget Logic ---
-        function setBudget() {
-            const val = document.getElementById('budgetInput').value;
-            localStorage.setItem('userBudget', val);
-            document.getElementById('budgetDisplay').innerText = val ? val : "غير محددة";
-            displaySubs();
-        }
-
-        function checkBudget(total) {
-            const budget = parseFloat(localStorage.getItem('userBudget')) || 0;
-            const container = document.querySelector('.flip-card-container');
-            if(budget > 0 && total > budget) {
-                container.classList.add('budget-warning');
-                showToast(`تجاوزت الميزانية بـ ${(total - budget).toFixed(0)}`, '⚠️');
-            } else {
-                container.classList.remove('budget-warning');
+            if(budget > 0) {
+                document.getElementById('budgetView').innerText = `${budget} ${currency}`;
+                const card = document.getElementById('mainCard');
+                if(total > budget) card.classList.add('budget-alert');
+                else card.classList.remove('budget-alert');
             }
+
+            updateStats(subs, total);
         }
 
-        // --- Add / Edit Logic ---
-        function openModal() {
-            document.body.classList.add('modal-open');
-            document.getElementById('addModal').classList.add('active');
-            document.getElementById('drawer').classList.remove('active');
-            document.getElementById('overlay').classList.add('active');
+        function updateStats(subs, total) {
+            const content = document.getElementById('statsContent');
+            if(subs.length === 0) { content.innerHTML = "<p class='text-[10px] text-center opacity-40'>لا بيانات للتحليل</p>"; return; }
             
-            // Reset for Add
-            document.getElementById('modalTitle').innerText = "إضافة اشتراك";
-            document.getElementById('editIndex').value = "-1";
-            document.getElementById('subName').value = "";
-            document.getElementById('subPrice').value = "";
+            content.innerHTML = subs.map(s => {
+                const sPrice = s.type === 'annual' ? s.price/12 : s.price;
+                const perc = total > 0 ? ((sPrice / total) * 100).toFixed(0) : 0;
+                return `
+                    <div class="space-y-1">
+                        <div class="flex justify-between text-[9px] font-black uppercase opacity-60">
+                            <span>${s.name}</span>
+                            <span>${perc}%</span>
+                        </div>
+                        <div class="w-full bg-white/5 h-1.5 rounded-full overflow-hidden">
+                            <div class="bg-blue-500 h-full" style="width: ${perc}%"></div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
         }
-
-        function openEdit(index) {
-            const subs = getSubs();
-            const sub = subs[index];
-            
-            document.body.classList.add('modal-open');
-            document.getElementById('addModal').classList.add('active');
-            document.getElementById('overlay').classList.add('active');
-            
-            document.getElementById('modalTitle').innerText = "تعديل الاشتراك";
-            document.getElementById('editIndex').value = index;
-            document.getElementById('subName').value = sub.name;
-            document.getElementById('subPrice').value = sub.price;
-            document.getElementById('subDate').value = sub.date;
-            document.getElementById('subType').value = sub.type || 'monthly';
-            document.getElementById('subCat').value = sub.category || 'أخرى';
-        }
-
-        function closeModal() {
-            document.body.classList.remove('modal-open');
-            document.getElementById('addModal').classList.remove('active');
-            document.getElementById('overlay').classList.remove('active');
-        }
-
-        function closeAll() { closeModal(); document.getElementById('drawer').classList.remove('active'); }
 
         function saveSub() {
-            const index = parseInt(document.getElementById('editIndex').value);
-            const sub = {
-                name: document.getElementById('subName').value,
-                price: document.getElementById('subPrice').value,
-                type: document.getElementById('subType').value,
-                category: document.getElementById('subCat').value,
-                date: document.getElementById('subDate').value
-            };
-
-            if(!sub.name || !sub.price || !sub.date) return showToast("البيانات ناقصة!", "❌");
-
-            const subs = getSubs();
+            const name = document.getElementById('subName').value;
+            const price = document.getElementById('subPrice').value;
+            const date = document.getElementById('subDate').value;
+            const type = document.getElementById('subType').value;
             
-            if(index > -1) {
-                subs[index] = sub; // Edit
-                showToast("تم تعديل الاشتراك", "✏️");
-            } else {
-                subs.push(sub); // Add
-                showToast("تمت الإضافة بنجاح", "✅");
-                confetti({ particleCount: 100, spread: 70, origin: { y: 0.7 } });
-            }
+            if(!name || !price) return showToast("الرجاء إكمال البيانات");
 
+            const subs = JSON.parse(localStorage.getItem('mySubs') || '[]');
+            subs.push({ name, price, date, type });
             localStorage.setItem('mySubs', JSON.stringify(subs));
+            
+            confetti({ particleCount: 150, spread: 70, origin: { y: 0.7 } });
             closeModal();
+            displaySubs();
+            showToast("تم إضافة الاشتراك بنجاح");
+        }
+
+        function moveToArchive(i) {
+            let subs = JSON.parse(localStorage.getItem('mySubs'));
+            let archive = JSON.parse(localStorage.getItem('myArchive') || '[]');
+            archive.unshift(subs[i]);
+            localStorage.setItem('myArchive', JSON.stringify(archive));
+            showToast("تم النقل إلى الأرشيف");
             displaySubs();
         }
 
-        // --- Sorting ---
-        function sortSubs(type, el) {
-            document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
-            el.classList.add('active');
-            displaySubs(type);
+        function deleteSub(i) {
+            let subs = JSON.parse(localStorage.getItem('mySubs'));
+            subs.splice(i, 1);
+            localStorage.setItem('mySubs', JSON.stringify(subs));
+            displaySubs();
         }
 
-        // --- Archive Logic ---
-        function addToArchive(index) {
-            const subs = getSubs();
-            const item = subs[index];
-            const archive = getArchive();
-            
-            item.paidDate = new Date().toLocaleDateString();
-            archive.unshift(item); // Add to top
-            
-            localStorage.setItem('myArchive', JSON.stringify(archive));
-            showToast(`تم دفع ${item.name}`, "💰");
-            // Note: We don't remove from active subs because subs are recurring, but you could "reset" the date if you wanted.
+        function updateBudget() {
+            localStorage.setItem('userBudget', document.getElementById('budgetInput').value);
+            displaySubs();
+            showToast("تم تحديث الميزانية");
         }
 
-        function renderArchive() {
-            const archive = getArchive();
-            const div = document.getElementById('archiveList');
-            if(archive.length === 0) { div.innerHTML = "<p class='text-center text-xs opacity-50'>السجل فارغ</p>"; return; }
-            
-            div.innerHTML = archive.map(item => `
-                <div class="glass-panel p-3 rounded-xl flex justify-between items-center opacity-60 grayscale hover:grayscale-0 transition">
-                    <div>
-                        <h4 class="font-bold text-sm line-through">${item.name}</h4>
-                        <span class="text-[10px]">${item.paidDate}</span>
-                    </div>
-                    <span class="text-xs font-bold">${item.price}</span>
-                </div>
-            `).join('');
-        }
-
-        // --- Calendar Logic ---
-        function renderCalendar() {
-            const grid = document.getElementById('calendarGrid');
-            grid.innerHTML = '';
-            const subs = getSubs();
-            
-            // Create 30 days grid (Simplified)
-            for(let i=1; i<=31; i++) {
-                const dayDiv = document.createElement('div');
-                dayDiv.className = 'cal-day';
-                dayDiv.innerText = i;
-                
-                // Check if any sub is due on this day
-                const hasSub = subs.find(s => new Date(s.date).getDate() == i);
-                if(hasSub) {
-                    dayDiv.classList.add('has-sub');
-                    dayDiv.onclick = () => showToast(`يوم ${i}: ${hasSub.name}`, "📅");
-                }
-                grid.appendChild(dayDiv);
-            }
-        }
-
-        // --- Charts Logic ---
-        function renderCharts() {
-            const subs = getSubs();
-            const cats = {};
-            subs.forEach(s => cats[s.category] = (cats[s.category] || 0) + parseFloat(s.price));
-            
-            const total = Object.values(cats).reduce((a,b) => a+b, 0);
-            let gradients = [];
-            let start = 0;
-            const colors = ['#3b82f6', '#ec4899', '#10b981', '#f59e0b', '#8b5cf6'];
-            
-            const legend = document.getElementById('chartLegend');
-            legend.innerHTML = '';
-
-            Object.keys(cats).forEach((cat, i) => {
-                const perc = (cats[cat] / total) * 100;
-                const color = colors[i % colors.length];
-                gradients.push(`${color} ${start}% ${start + perc}%`);
-                start += perc;
-
-                legend.innerHTML += `<div class="text-[10px] flex items-center gap-1"><span class="w-2 h-2 rounded-full" style="background:${color}"></span>${cat} ${perc.toFixed(0)}%</div>`;
-            });
-            
-            const chart = document.getElementById('categoryChart');
-            chart.style.setProperty('--chart-colors', gradients.join(', '));
-            
-            const topLabel = Object.keys(cats).reduce((a, b) => cats[a] > cats[b] ? a : b, 'لا يوجد');
-            document.getElementById('chartTopLabel').innerText = topLabel;
-        }
-
-        // --- Utils ---
         function changeCurrency() {
             localStorage.setItem('userCurrency', document.getElementById('currencySelect').value);
             displaySubs();
@@ -633,32 +389,28 @@
 
         function exportData() {
             const data = localStorage.getItem('mySubs');
-            if(!data || data === '[]') return showToast("القائمة فارغة، لا يوجد ما يتم حفظه", "⚠️");
-            
+            if(!data || data === '[]') return showToast("القائمة فارغة!");
             const blob = new Blob([data], { type: 'application/json' });
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = `backup_subs_${new Date().toISOString().split('T')[0]}.json`;
+            a.download = `backup-${new Date().toLocaleDateString()}.json`;
             a.click();
-            showToast("تم تحميل النسخة الاحتياطية", "💾");
         }
 
-        // Initialize
-        const savedTheme = localStorage.getItem('userTheme');
-        if(savedTheme) setTheme(savedTheme);
-        
-        const savedBudget = localStorage.getItem('userBudget');
-        if(savedBudget) {
-            document.getElementById('budgetInput').value = savedBudget;
-            document.getElementById('budgetDisplay').innerText = savedBudget;
+        function clearAll() {
+            if(confirm("سيتم حذف كل البيانات، هل أنت متأكد؟")) {
+                localStorage.clear();
+                location.reload();
+            }
         }
 
-        const savedCurr = localStorage.getItem('userCurrency');
-        if(savedCurr) document.getElementById('currencySelect').value = savedCurr;
-
-        displaySubs();
-
+        window.onload = () => {
+            if(localStorage.getItem('theme') === 'light') toggleTheme();
+            if(localStorage.getItem('userCurrency')) document.getElementById('currencySelect').value = localStorage.getItem('userCurrency');
+            if(localStorage.getItem('userBudget')) document.getElementById('budgetInput').value = localStorage.getItem('userBudget');
+            displaySubs();
+        }
     </script>
 </body>
 </html>
