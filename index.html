@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>مدير اشتراكاتي | Sub Manager</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { font-family: system-ui, -apple-system, sans-serif; background-color: #f8fafc; }
+    </style>
+</head>
+<body class="p-5">
+    <div class="max-w-md mx-auto">
+        <header class="text-center mb-8">
+            <h1 class="text-3xl font-bold text-blue-600">اشتراكاتي</h1>
+            <p class="text-gray-500">تحكم بمصاريفك بكل أمان</p>
+        </header>
+
+        <div class="bg-white p-6 rounded-2xl shadow-sm mb-6">
+            <h2 class="font-bold mb-4">إضافة اشتراك جديد</h2>
+            <div class="space-y-3">
+                <input type="text" id="subName" placeholder="اسم الخدمة (مثل نيتفلكس)" class="w-full p-2 border rounded-lg outline-none focus:ring-2 focus:ring-blue-400">
+                <input type="number" id="subPrice" placeholder="السعر" class="w-full p-2 border rounded-lg outline-none focus:ring-2 focus:ring-blue-400">
+                <input type="date" id="subDate" class="w-full p-2 border rounded-lg outline-none focus:ring-2 focus:ring-blue-400">
+                <button onclick="saveSub()" class="w-full bg-blue-600 text-white py-2 rounded-lg font-bold hover:bg-blue-700 transition">حفظ</button>
+            </div>
+        </div>
+
+        <div id="subList" class="space-y-4">
+            </div>
+    </div>
+
+    <script>
+        // دالة لحساب الأيام المتبقية
+        function getDaysLeft(date) {
+            const diff = new Date(date) - new Date();
+            return Math.ceil(diff / (1000 * 60 * 60 * 24));
+        }
+
+        // دالة لعرض الاشتراكات
+        function displaySubs() {
+            const subs = JSON.parse(localStorage.getItem('mySubs') || '[]');
+            const listDiv = document.getElementById('subList');
+            listDiv.innerHTML = '';
+
+            subs.forEach((sub, index) => {
+                const days = getDaysLeft(sub.date);
+                listDiv.innerHTML += `
+                    <div class="bg-white p-4 rounded-xl shadow-sm border-r-4 border-blue-500 flex justify-between items-center">
+                        <div>
+                            <h3 class="font-bold">${sub.name}</h3>
+                            <p class="text-sm text-gray-500">${sub.price} ريال</p>
+                        </div>
+                        <div class="text-left">
+                            <span class="text-sm font-semibold ${days <= 3 ? 'text-red-500' : 'text-green-600'}">
+                                باقي ${days} أيام
+                            </span>
+                            <p class="text-xs text-gray-400">${sub.date}</p>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        // دالة الحفظ في LocalStorage
+        function saveSub() {
+            const name = document.getElementById('subName').value;
+            const price = document.getElementById('subPrice').value;
+            const date = document.getElementById('subDate').value;
+
+            if(!name || !price || !date) return alert("يرجى ملء البيانات");
+
+            const subs = JSON.parse(localStorage.getItem('mySubs') || '[]');
+            subs.push({ name, price, date });
+            localStorage.setItem('mySubs', JSON.stringify(subs));
+            
+            displaySubs(); // تحديث القائمة
+            document.getElementById('subName').value = ''; // تفريغ الحقول
+        }
+
+        // تشغيل العرض عند فتح الصفحة
+        displaySubs();
+    </script>
+</body>
+</html>
