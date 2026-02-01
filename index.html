@@ -3,52 +3,44 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sub Manager Pro</title>
+    <title>Sub Manager | الترا جلاس</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
     <style>
-        /* الوضع الزجاجي الفائق Ultra Glass */
         body { 
             font-family: 'Cairo', sans-serif; 
-            background: linear-gradient(45deg, #0f172a, #1e1b4b, #312e81);
-            background-attachment: fixed;
+            background: #0f172a; 
             color: white; 
             min-height: 100vh;
             overflow-x: hidden;
+            transition: 0.5s filter ease; /* سلاسة الغشاوة */
         }
+
+        /* حاوية المحتوى الأساسي التي سيتم تغبيشها */
+        #main-content { transition: filter 0.4s ease; }
+
+        /* تأثير الغشاوة عند فتح النوافذ */
+        .blur-active #main-content { filter: blur(15px) brightness(0.7); }
+
         .glass-panel { 
-            background: rgba(255, 255, 255, 0.03); 
-            backdrop-filter: blur(25px); 
+            background: rgba(255, 255, 255, 0.05); 
+            backdrop-filter: blur(20px); 
             border: 1px solid rgba(255,255,255,0.1); 
-            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
         }
-        .credit-card { 
-            background: linear-gradient(135deg, rgba(37, 99, 235, 0.2), rgba(30, 58, 138, 0.4));
-            border: 1px solid rgba(255,255,255,0.1);
-        }
-        /* إصلاح القائمة الجانبية */
+
+        /* القائمة الجانبية - Inset-y-0 تضمن ظهورها من الأعلى للأسفل */
         .drawer { 
             transition: 0.5s cubic-bezier(0.4, 0, 0.2, 1); 
             transform: translateX(100%); 
             position: fixed; 
-            top: 0; 
-            right: 0; 
-            bottom: 0; 
-            width: 80%; 
-            max-width: 300px; 
+            top: 0; right: 0; bottom: 0;
+            width: 280px; 
             z-index: 2000; 
         }
         .drawer.active { transform: translateX(0); }
-        .overlay { 
-            display: none; 
-            position: fixed; 
-            inset: 0; 
-            background: rgba(0,0,0,0.6); 
-            z-index: 1500; 
-            backdrop-filter: blur(4px);
-        }
-        .overlay.active { display: block; }
+
         .modal { 
             display: none; 
             position: fixed; 
@@ -59,105 +51,110 @@
             padding: 20px; 
         }
         .modal.active { display: flex; }
+
+        .credit-card { 
+            background: linear-gradient(135deg, #1d4ed8, #1e3a8a);
+            border: 1px solid rgba(255,255,255,0.15);
+        }
     </style>
 </head>
-<body class="pb-10">
+<body>
 
-    <div id="overlay" class="overlay" onclick="toggleDrawer()"></div>
-
-    <div class="p-6 flex justify-between items-center relative z-10">
-        <button onclick="toggleDrawer()" class="p-3 glass-panel rounded-2xl active:scale-90 transition">
-            <img src="https://cdn-icons-png.flaticon.com/512/8166/8166544.png" class="w-6 h-6 invert">
-        </button>
-        <h1 class="text-xl font-black tracking-widest text-blue-400">SUB MANAGER</h1>
-        <div class="w-10"></div>
-    </div>
-
-    <div class="max-w-md mx-auto px-6">
-        <div class="credit-card rounded-[2.5rem] p-8 text-white mb-8 relative overflow-hidden shadow-2xl">
-            <div class="flex justify-between items-start mb-10">
-                <div>
-                    <p class="text-blue-300 text-[10px] font-bold mb-1 uppercase tracking-widest">إجمالي المصاريف الشهرية</p>
-                    <h2 id="totalDisplay" class="text-4xl font-black">0 SAR</h2>
-                </div>
-                <img src="https://cdn-icons-png.flaticon.com/512/9334/9334611.png" class="w-12 opacity-80">
-            </div>
-            <div class="flex justify-between items-end">
-                <p class="text-xs font-bold opacity-60 tracking-widest uppercase">Ultra Glass Edition</p>
-                <div class="flex -space-x-2">
-                    <div class="w-8 h-8 rounded-full bg-orange-500/80 border border-white/10 shadow-lg"></div>
-                    <div class="w-8 h-8 rounded-full bg-red-600/80 border border-white/10 shadow-lg"></div>
-                </div>
-            </div>
+    <div id="main-content">
+        <div class="p-6 flex justify-between items-center">
+            <button onclick="toggleDrawer()" class="p-3 glass-panel rounded-2xl active:scale-95 transition">
+                <img src="https://cdn-icons-png.flaticon.com/512/8166/8166544.png" class="w-6 h-6 invert">
+            </button>
+            <h1 class="text-xl font-black text-blue-400 tracking-tighter uppercase">Sub Manager</h1>
+            <div class="w-10"></div>
         </div>
 
-        <div id="statsSection" class="mb-8 glass-panel p-6 rounded-[2rem] hidden transition-all">
-            <h3 class="text-[10px] font-bold text-gray-400 mb-4 text-center uppercase tracking-[0.2em]">تحليل النفقات</h3>
-            <div id="statsContent" class="space-y-4"></div>
-        </div>
+        <div class="max-w-md mx-auto px-6">
+            <div class="credit-card rounded-[2.5rem] p-8 mb-8 relative overflow-hidden shadow-2xl">
+                <div class="flex justify-between items-start mb-10">
+                    <div>
+                        <p class="text-blue-200 text-[10px] font-bold mb-1 uppercase tracking-widest">إجمالي المصاريف</p>
+                        <h2 id="totalDisplay" class="text-4xl font-black">SAR 0</h2>
+                    </div>
+                    <img src="https://cdn-icons-png.flaticon.com/512/9334/9334611.png" class="w-12 opacity-90">
+                </div>
+                <div class="flex justify-between items-end">
+                    <p class="text-[10px] font-bold opacity-50 tracking-widest uppercase">Sub Manager Pro</p>
+                    <div class="flex -space-x-2">
+                        <div class="w-8 h-8 rounded-full bg-orange-500/90 border border-white/20"></div>
+                        <div class="w-8 h-8 rounded-full bg-red-600/90 border border-white/20"></div>
+                    </div>
+                </div>
+            </div>
 
-        <div id="subList" class="space-y-4"></div>
+            <div id="subList" class="space-y-4"></div>
+        </div>
     </div>
 
-    <div id="drawer" class="drawer glass-panel p-8 shadow-2xl">
+    <div id="drawer" class="drawer glass-panel p-8">
         <div class="flex justify-between items-center mb-10">
-            <h2 class="text-xl font-black text-blue-400">التنقل</h2>
-            <button onclick="toggleDrawer()" class="text-2xl opacity-40">×</button>
+            <h2 class="text-xl font-black">القائمة</h2>
+            <button onclick="toggleDrawer()" class="text-3xl opacity-30">×</button>
         </div>
-        <nav class="space-y-3">
-            <button onclick="toggleDrawer()" class="w-full flex items-center gap-4 p-4 rounded-2xl bg-white/5 font-bold">
-                <img src="https://cdn-icons-png.flaticon.com/512/1946/1946436.png" class="w-5 h-5 invert"> الرئيسية
-            </button>
-            <button onclick="openModal()" class="w-full flex items-center gap-4 p-4 rounded-2xl hover:bg-white/5 transition font-bold">
-                <img src="https://cdn-icons-png.flaticon.com/512/4315/4315609.png" class="w-5 h-5 invert"> إضافة اشتراك
-            </button>
-            <button onclick="toggleStats()" class="w-full flex items-center gap-4 p-4 rounded-2xl hover:bg-white/5 transition font-bold">
-                <img src="https://cdn-icons-png.flaticon.com/512/3501/3501173.png" class="w-5 h-5 invert"> الإحصائيات
-            </button>
-            
-            <div class="pt-6 mt-6 border-t border-white/5 space-y-4">
-                <div class="px-2">
-                    <label class="text-[10px] text-gray-500 font-bold uppercase mb-2 block">العملة</label>
-                    <select id="currencySelect" onchange="changeCurrency()" class="w-full bg-white/5 border border-white/10 p-4 rounded-xl outline-none text-sm font-bold">
-                        <option value="SAR" class="text-black">SAR</option>
-                        <option value="USD" class="text-black">USD</option>
-                        <option value="AED" class="text-black">AED</option>
-                    </select>
-                </div>
-                <button onclick="exportData()" class="w-full flex items-center justify-center gap-2 p-4 rounded-xl text-xs text-gray-500 bg-white/5">
-                    <img src="https://cdn-icons-png.flaticon.com/512/2874/2874091.png" class="w-4 h-4 invert opacity-40"> حفظ نسخة احتياطية
-                </button>
-            </div>
+        <nav class="space-y-4">
+            <button onclick="toggleDrawer()" class="w-full flex items-center gap-4 p-4 rounded-2xl bg-white/5 font-bold">الرئيسية</button>
+            <button onclick="openModal()" class="w-full flex items-center gap-4 p-4 rounded-2xl hover:bg-white/5 transition font-bold text-blue-400">إضافة اشتراك +</button>
+            <button onclick="exportData()" class="w-full p-4 text-xs text-gray-500 bg-white/5 rounded-2xl mt-10">حفظ نسخة احتياطية</button>
         </nav>
     </div>
 
     <div id="addModal" class="modal">
-        <div class="glass-panel w-full max-w-sm rounded-[2.5rem] p-8 relative border border-white/20 shadow-2xl">
-            <div class="text-center mb-6">
-                <div id="logoPreview" class="w-20 h-20 mx-auto bg-white/5 rounded-3xl flex items-center justify-center mb-4 text-3xl font-black border border-white/10 shadow-inner">
-                    <span>+</span>
-                </div>
-                <h3 class="text-xl font-black">إضافة اشتراك جديد</h3>
+        <div class="glass-panel w-full max-w-sm rounded-[3rem] p-8 border border-white/20 shadow-2xl">
+            <div class="text-center mb-8">
+                <div id="logoPreview" class="w-20 h-20 mx-auto bg-white/10 rounded-[2rem] flex items-center justify-center mb-4 text-4xl font-black border border-white/10">+</div>
+                <h3 class="text-xl font-black text-white">اشتراك جديد</h3>
             </div>
+            
             <div class="space-y-4">
-                <input type="text" id="subName" oninput="updateLogoPreview(this.value)" placeholder="اسم الخدمة (مثل Netflix)" class="w-full p-4 rounded-2xl bg-white/5 border border-white/10 outline-none focus:border-blue-500 text-white placeholder:text-gray-600">
+                <input type="text" id="subName" oninput="updateLogoPreview(this.value)" placeholder="اسم الخدمة" class="w-full p-5 rounded-2xl bg-white/5 border border-white/10 outline-none text-white focus:border-blue-500 transition-all">
+                
                 <div class="flex gap-2">
-                    <input type="number" id="subPrice" placeholder="السعر" class="flex-1 p-4 rounded-2xl bg-white/5 border border-white/10 outline-none focus:border-blue-500 text-white placeholder:text-gray-600">
-                    <select id="subType" class="bg-white/5 border border-white/10 p-4 rounded-2xl text-xs font-bold outline-none">
+                    <input type="number" id="subPrice" placeholder="السعر" class="flex-1 p-5 rounded-2xl bg-white/5 border border-white/10 outline-none text-white focus:border-blue-500">
+                    <select id="subType" class="bg-white/10 border border-white/10 p-4 rounded-2xl text-xs font-bold outline-none text-white">
                         <option value="monthly" class="text-black">شهري</option>
                         <option value="annual" class="text-black">سنوي</option>
                     </select>
                 </div>
-                <input type="date" id="subDate" class="w-full p-4 rounded-2xl bg-white/5 border border-white/10 outline-none text-white">
-                <button onclick="saveSub()" class="w-full bg-blue-600 text-white py-4 rounded-2xl font-black shadow-lg shadow-blue-600/30 active:scale-95 transition-all">حفظ الاشتراك</button>
-                <button onclick="closeModal()" class="w-full text-gray-500 font-bold text-sm hover:text-gray-300">إلغاء</button>
+
+                <input type="date" id="subDate" class="w-full p-5 rounded-2xl bg-white/5 border border-white/10 outline-none text-white">
+                
+                <button onclick="saveSub()" class="w-full bg-blue-600 text-white py-5 rounded-2xl font-black shadow-xl shadow-blue-600/30 active:scale-95 transition-all">حفظ الاشتراك</button>
+                <button onclick="closeModal()" class="w-full text-gray-500 font-bold text-sm pt-2">إلغاء</button>
             </div>
         </div>
     </div>
 
     <script>
+        // الوظائف الأساسية مع تفعيل وإلغاء الغشاوة (Blur)
+        function toggleDrawer() {
+            const drw = document.getElementById('drawer');
+            drw.classList.toggle('active');
+            document.body.classList.toggle('blur-active'); // تفعيل الغشاوة
+        }
+
+        function openModal() {
+            document.getElementById('addModal').classList.add('active');
+            if(!document.body.classList.contains('blur-active')) {
+                document.body.classList.add('blur-active'); // تفعيل الغشاوة
+            }
+            if(document.getElementById('drawer').classList.contains('active')) {
+                document.getElementById('drawer').classList.remove('active');
+            }
+        }
+
+        function closeModal() {
+            document.getElementById('addModal').classList.remove('active');
+            document.body.classList.remove('blur-active'); // إزالة الغشاوة
+        }
+
+        // نفس منطق اللوجو المتقدم الذي تستخدمه
         const knownLogos = {
-       'netflix': 'https://cdn-icons-png.flaticon.com/512/5977/5977590.png',
+           'netflix': 'https://cdn-icons-png.flaticon.com/512/5977/5977590.png',
             'spotify': 'https://cdn-icons-png.flaticon.com/512/2111/2111624.png',
             'tiktok': 'https://cdn-icons-png.flaticon.com/512/3046/3046121.png',
             'youtube': 'https://cdn-icons-png.flaticon.com/512/174/174883.png',
@@ -185,88 +182,16 @@
             'express vpn': 'https://img.icons8.com/?size=48&id=EYvWm4GHpQwc&format=png'
         };
 
-        function toggleDrawer() {
-            document.getElementById('drawer').classList.toggle('active');
-            document.getElementById('overlay').classList.toggle('active');
-        }
-
-        function openModal() { document.getElementById('addModal').classList.add('active'); toggleDrawer(); }
-        function closeModal() { document.getElementById('addModal').classList.remove('active'); }
-
         function updateLogoPreview(val) {
             const preview = document.getElementById('logoPreview');
             const clean = val.toLowerCase().trim();
             if (knownLogos[clean]) {
-                preview.innerHTML = `<img src="${knownLogos[clean]}" class="w-full h-full object-contain p-3">`;
-                preview.style.background = "rgba(255,255,255,0.05)";
+                preview.innerHTML = `<img src="${knownLogos[clean]}" class="w-full h-full object-contain p-4">`;
+                preview.style.background = "white";
             } else {
                 preview.innerText = val ? val.charAt(0).toUpperCase() : "+";
-                preview.style.background = "rgba(255,255,255,0.03)";
+                preview.style.background = "rgba(255,255,255,0.05)";
             }
-        }
-
-        function displaySubs() {
-            const subs = JSON.parse(localStorage.getItem('mySubs') || '[]');
-            const currency = localStorage.getItem('userCurrency') || 'SAR';
-            const listDiv = document.getElementById('subList');
-            let total = 0;
-            listDiv.innerHTML = '';
-
-            subs.forEach((sub, index) => {
-                // حساب السعر الشهري إذا كان الاشتراك سنوياً
-                const monthlyPrice = sub.type === 'annual' ? (sub.price / 12) : sub.price;
-                total += parseFloat(monthlyPrice);
-                
-                const logo = knownLogos[sub.name.toLowerCase().trim()];
-                
-                listDiv.innerHTML += `
-                    <div class="glass-panel p-5 rounded-[2.2rem] flex justify-between items-center transition-all hover:scale-[1.02]">
-                        <div class="flex items-center gap-4">
-                            <div class="w-16 h-16 rounded-3xl bg-white/5 flex items-center justify-center border border-white/5 p-3 overflow-hidden">
-                                ${logo ? `<img src="${logo}" class="w-full h-full object-contain">` : `<span class="text-xl font-black opacity-30">${sub.name.charAt(0)}</span>`}
-                            </div>
-                            <div>
-                                <h4 class="font-bold text-white">${sub.name}</h4>
-                                <div class="flex items-center gap-2">
-                                    <p class="text-[10px] font-black text-blue-400 uppercase">${monthlyPrice.toFixed(2)} ${currency} / شهر</p>
-                                    ${sub.type === 'annual' ? '<span class="text-[8px] bg-blue-600/20 text-blue-300 px-2 rounded-full font-bold">سنوي</span>' : ''}
-                                </div>
-                            </div>
-                        </div>
-                        <button onclick="deleteSub(${index})" class="p-3 bg-red-500/10 rounded-2xl hover:bg-red-500/20 transition active:scale-90">
-                            <img src="https://cdn-icons-png.flaticon.com/512/6861/6861362.png" class="w-5 h-5 invert opacity-30">
-                        </button>
-                    </div>
-                `;
-            });
-            document.getElementById('totalDisplay').innerText = `${total.toLocaleString(undefined, {minimumFractionDigits: 2})} ${currency}`;
-            updateStats(subs, currency);
-        }
-
-        function toggleStats() { document.getElementById('statsSection').classList.toggle('hidden'); toggleDrawer(); }
-
-        function updateStats(subs, cur) {
-            const content = document.getElementById('statsContent');
-            if(subs.length === 0) { content.innerHTML = "<p class='text-xs text-center text-gray-500'>لا توجد بيانات كافية</p>"; return; }
-            
-            const total = subs.reduce((acc, s) => acc + (s.type === 'annual' ? s.price/12 : parseFloat(s.price)), 0);
-            const sorted = [...subs].sort((a,b) => (b.type === 'annual' ? b.price/12 : b.price) - (a.type === 'annual' ? a.price/12 : a.price)).slice(0, 3);
-            
-            content.innerHTML = sorted.map(s => {
-                const sPrice = s.type === 'annual' ? s.price/12 : s.price;
-                const perc = ((sPrice / total) * 100).toFixed(0);
-                return `
-                    <div class="space-y-1">
-                        <div class="flex justify-between text-[9px] font-bold uppercase tracking-widest text-gray-400 px-1">
-                            <span>${s.name}</span>
-                            <span>${perc}%</span>
-                        </div>
-                        <div class="w-full bg-white/5 h-2 rounded-full overflow-hidden border border-white/5">
-                            <div class="bg-gradient-to-r from-blue-600 to-indigo-400 h-full rounded-full" style="width: ${perc}%"></div>
-                        </div>
-                    </div>
-                `;
-            }).join('');
         }
 
         function saveSub() {
@@ -274,16 +199,51 @@
             const price = document.getElementById('subPrice').value;
             const date = document.getElementById('subDate').value;
             const type = document.getElementById('subType').value;
-            
-            if(!name || !price || !date) return alert("البيانات ناقصة!");
+
+            if(!name || !price || !date) return alert("البيانات ناقصة");
 
             const subs = JSON.parse(localStorage.getItem('mySubs') || '[]');
             subs.push({ name, price, date, type });
             localStorage.setItem('mySubs', JSON.stringify(subs));
             
-            confetti({ particleCount: 150, spread: 70, origin: { y: 0.7 }, colors: ['#2563eb', '#ffffff'] });
+            confetti({ particleCount: 150, spread: 70, origin: { y: 0.8 }, colors: ['#3b82f6', '#ffffff'] });
             closeModal();
             displaySubs();
+            
+            // تصفير المدخلات
+            document.getElementById('subName').value = '';
+            document.getElementById('subPrice').value = '';
+        }
+
+        function displaySubs() {
+            const subs = JSON.parse(localStorage.getItem('mySubs') || '[]');
+            const listDiv = document.getElementById('subList');
+            let total = 0;
+            listDiv.innerHTML = '';
+
+            subs.forEach((sub, index) => {
+                const monthlyPrice = sub.type === 'annual' ? (sub.price / 12) : parseFloat(sub.price);
+                total += monthlyPrice;
+                const logo = knownLogos[sub.name.toLowerCase().trim()];
+                
+                listDiv.innerHTML += `
+                    <div class="glass-panel p-5 rounded-[2.5rem] flex justify-between items-center transition-all active:scale-95">
+                        <div class="flex items-center gap-4">
+                            <div class="w-14 h-14 rounded-2xl bg-white/5 flex items-center justify-center p-2">
+                                ${logo ? `<img src="${logo}" class="w-full h-full object-contain">` : `<span class="text-xl font-black opacity-20">${sub.name.charAt(0)}</span>`}
+                            </div>
+                            <div>
+                                <h4 class="font-bold text-white text-sm">${sub.name}</h4>
+                                <p class="text-[10px] font-black text-blue-400">${monthlyPrice.toFixed(2)} SAR / شهر</p>
+                            </div>
+                        </div>
+                        <button onclick="deleteSub(${index})" class="p-3 bg-red-500/10 rounded-2xl opacity-30 hover:opacity-100">
+                             <img src="https://cdn-icons-png.flaticon.com/512/6861/6861362.png" class="w-4 h-4 invert">
+                        </button>
+                    </div>
+                `;
+            });
+            document.getElementById('totalDisplay').innerText = `SAR ${total.toLocaleString()}`;
         }
 
         function deleteSub(i) {
@@ -291,22 +251,6 @@
             subs.splice(i, 1);
             localStorage.setItem('mySubs', JSON.stringify(subs));
             displaySubs();
-        }
-
-        function changeCurrency() {
-            localStorage.setItem('userCurrency', document.getElementById('currencySelect').value);
-            displaySubs();
-        }
-
-        function exportData() {
-            const data = localStorage.getItem('mySubs');
-            if(!data) return alert("لا توجد بيانات!");
-            const blob = new Blob([data], { type: 'application/json' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `backup-${new Date().toLocaleDateString()}.json`;
-            a.click();
         }
 
         displaySubs();
