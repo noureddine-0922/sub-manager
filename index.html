@@ -3,178 +3,210 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sub Manager Premium</title>
+    <title>Sub Manager | مدير اشتراكاتي</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
     <style>
-        body { background-color: #f0f4f8; font-family: 'Cairo', sans-serif; transition: 0.3s; }
-        .dark-mode { background-color: #0b1120; color: white; }
-        .glass { background: rgba(255, 255, 255, 0.8); backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.3); }
-        .dark-mode .glass { background: rgba(30, 41, 59, 0.6); border-color: rgba(255,255,255,0.1); }
-        .credit-card { 
-            background: linear-gradient(135deg, #0f172a 0%, #334155 100%);
-            box-shadow: 0 15px 35px rgba(0,0,0,0.2);
-        }
-        .drawer { transition: 0.4s cubic-bezier(0.4, 0, 0.2, 1); transform: translateX(100%); }
+        body { font-family: 'Cairo', sans-serif; background-color: #0b1120; color: white; transition: 0.3s; }
+        .glass { background: rgba(30, 41, 59, 0.7); backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.1); }
+        .credit-card { background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); border: 1px solid rgba(255,255,255,0.05); }
+        .drawer { transition: 0.4s cubic-bezier(0.4, 0, 0.2, 1); transform: translateX(100%); position: fixed; inset-y: 0; right: 0; width: 280px; z-index: 100; }
         .drawer.active { transform: translateX(0); }
-        .nav-item { transition: 0.2s; border-radius: 15px; }
-        .nav-item:hover { background: rgba(59, 130, 246, 0.1); }
+        .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 200; align-items: center; justify-content: center; padding: 20px; }
+        .modal.active { display: flex; }
     </style>
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap" rel="stylesheet">
 </head>
-<body class="min-h-screen">
+<body class="min-h-screen pb-10">
 
-    <div class="p-6 flex justify-between items-center relative z-20">
-        <button onclick="toggleDrawer()" class="p-2 glass rounded-2xl shadow-sm">
-            <img src="https://cdn-icons-png.flaticon.com/512/5068/5068642.png" class="w-7 h-7" alt="القائمة">
+    <div class="p-6 flex justify-between items-center">
+        <button onclick="toggleDrawer()" class="p-2 glass rounded-xl">
+            <img src="https://cdn-icons-png.flaticon.com/512/8166/8166544.png" class="w-7 h-7 invert">
         </button>
-        <h1 class="text-xl font-black text-slate-800 dark:text-white">اشتراكاتي</h1>
+        <h1 class="text-xl font-black">مدير اشتراكاتي</h1>
         <div class="w-10"></div>
     </div>
 
     <div class="max-w-md mx-auto px-6">
-        <div class="credit-card rounded-[2.5rem] p-8 text-white mb-10 relative overflow-hidden border border-white/10">
-            <div class="absolute -right-10 -top-10 w-40 h-40 bg-blue-500/10 rounded-full blur-3xl"></div>
-            <div class="flex justify-between items-start mb-12">
+        <div class="credit-card rounded-[2.5rem] p-8 text-white mb-8 relative overflow-hidden shadow-2xl">
+            <div class="flex justify-between items-start mb-10">
                 <div>
-                    <p class="text-blue-300 text-xs font-bold mb-1 tracking-widest">إجمالي المصاريف</p>
-                    <h2 id="totalDisplay" class="text-4xl font-black">0 SAR</h2>
+                    <p class="text-blue-400 text-xs font-bold mb-1">إجمالي المصاريف</p>
+                    <h2 id="totalDisplay" class="text-4xl font-black tracking-tight text-white">0 SAR</h2>
                 </div>
-                <img src="https://cdn-icons-png.flaticon.com/512/9334/9334611.png" class="w-12 shadow-sm">
+                <img src="https://cdn-icons-png.flaticon.com/512/9334/9334611.png" class="w-12">
             </div>
             <div class="flex justify-between items-end">
-                <p class="text-sm font-mono opacity-50">PREMIUM ACCOUNT</p>
-                <div class="flex">
-                    <div class="w-10 h-10 rounded-full bg-orange-500/80 blur-[1px]"></div>
-                    <div class="w-10 h-10 rounded-full bg-red-600/80 -mr-4 blur-[1px]"></div>
+                <p class="text-sm font-bold opacity-80 tracking-widest text-blue-200">مدير الاشتراكات</p>
+                <div class="flex -space-x-2">
+                    <div class="w-8 h-8 rounded-full bg-orange-500 opacity-80 border border-white/10"></div>
+                    <div class="w-8 h-8 rounded-full bg-red-600 opacity-80 border border-white/10"></div>
                 </div>
             </div>
+        </div>
+
+        <div id="statsSection" class="mb-8 glass p-4 rounded-3xl hidden">
+            <h3 class="text-xs font-bold text-gray-400 mb-3 text-center">تحليل المصاريف</h3>
+            <div id="statsContent" class="space-y-2"></div>
         </div>
 
         <div id="subList" class="space-y-4"></div>
     </div>
 
-    <div id="drawer" class="fixed inset-y-0 right-0 w-72 bg-white dark:bg-slate-900 z-50 shadow-2xl drawer p-8 flex flex-col border-r border-gray-100 dark:border-gray-800">
-        <div class="flex justify-between items-center mb-12">
-            <h2 class="font-black text-xl">التنقل</h2>
-            <button onclick="toggleDrawer()" class="text-gray-400 text-2xl">×</button>
+    <div id="drawer" class="drawer glass p-8 shadow-2xl border-l border-white/5">
+        <div class="flex justify-between items-center mb-10">
+            <h2 class="text-xl font-black">القائمة</h2>
+            <button onclick="toggleDrawer()" class="text-2xl opacity-50">×</button>
         </div>
-        
-        <nav class="space-y-4 flex-1">
-            <button class="nav-item w-full flex items-center gap-4 p-4 text-blue-600 bg-blue-50/50">
-                <img src="https://cdn-icons-png.flaticon.com/512/1946/1946436.png" class="w-6 h-6">
-                <span class="font-bold">الرئيسية</span>
+        <nav class="space-y-4">
+            <button onclick="toggleDrawer()" class="w-full flex items-center gap-4 p-4 rounded-2xl bg-blue-600/20 text-blue-400 font-bold">
+                <img src="https://cdn-icons-png.flaticon.com/512/1946/1946436.png" class="w-5 h-5 invert"> الرئيسية
             </button>
-            <button onclick="openModal()" class="nav-item w-full flex items-center gap-4 p-4 text-gray-500">
-                <img src="https://cdn-icons-png.flaticon.com/512/1828/1828817.png" class="w-6 h-6">
-                <span class="font-bold">إضافة اشتراك</span>
+            <button onclick="openModal()" class="w-full flex items-center gap-4 p-4 rounded-2xl hover:bg-white/5 transition font-bold">
+                <img src="https://cdn-icons-png.flaticon.com/512/10308/10308996.png" class="w-5 h-5 invert"> إضافة اشتراك
             </button>
-            <button class="nav-item w-full flex items-center gap-4 p-4 text-gray-500">
-                <img src="https://cdn-icons-png.flaticon.com/512/3501/3501173.png" class="w-6 h-6">
-                <span class="font-bold">الإحصائيات</span>
+            <button onclick="toggleStats()" class="w-full flex items-center gap-4 p-4 rounded-2xl hover:bg-white/5 transition font-bold">
+                <img src="https://cdn-icons-png.flaticon.com/512/3501/3501173.png" class="w-5 h-5 invert"> الإحصائيات
             </button>
-            <button onclick="toggleDarkMode()" class="nav-item w-full flex items-center gap-4 p-4 text-gray-500">
-                <img id="themeIconImg" src="https://cdn-icons-png.flaticon.com/512/6714/6714978.png" class="w-6 h-6">
-                <span class="font-bold" id="themeText">الوضع الليلي</span>
-            </button>
+            <div class="pt-6 mt-6 border-t border-white/5 space-y-4">
+                <select id="currencySelect" onchange="changeCurrency()" class="w-full bg-transparent border border-white/10 p-3 rounded-xl outline-none text-sm font-bold">
+                    <option value="SAR" class="text-black">ريال (SAR)</option>
+                    <option value="USD" class="text-black">دولار (USD)</option>
+                    <option value="AED" class="text-black">درهم (AED)</option>
+                    <option value="KWD" class="text-black">دينار (KWD)</option>
+                </select>
+                <button onclick="exportData()" class="w-full text-right text-xs text-gray-400 flex items-center gap-2">
+                    <img src="https://cdn-icons-png.flaticon.com/512/2874/2874091.png" class="w-4 h-4 opacity-50 invert"> حفظ نسخة احتياطية
+                </button>
+            </div>
         </nav>
-
-        <div class="pt-6 border-t border-gray-100">
-            <button onclick="exportData()" class="flex items-center gap-3 text-xs text-gray-400">
-                <img src="https://cdn-icons-png.flaticon.com/512/2874/2874091.png" class="w-4 h-4 opacity-50">
-                نسخة احتياطية
-            </button>
-        </div>
     </div>
 
-    <div id="addModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-md z-50 hidden items-center justify-center p-6">
-        <div class="bg-white dark:bg-slate-800 w-full max-w-sm rounded-[2rem] p-8 shadow-2xl">
-            <div class="text-center mb-8">
-                <img src="https://cdn-icons-png.flaticon.com/512/5968/5968812.png" class="w-16 h-16 mx-auto mb-4">
-                <h3 class="text-xl font-black">إضافة اشتراك جديد</h3>
+    <div id="addModal" class="modal">
+        <div class="glass w-full max-w-sm rounded-[2.5rem] p-8 shadow-2xl relative">
+            <div class="text-center mb-6">
+                <div id="logoPreview" class="w-20 h-20 mx-auto bg-white/10 rounded-3xl flex items-center justify-center mb-4 text-3xl font-black border border-white/10">+</div>
+                <h3 class="text-xl font-black text-white">إضافة اشتراك</h3>
             </div>
             <div class="space-y-4">
-                <input type="text" id="subName" placeholder="الخدمة (مثل Netflix)" class="w-full p-4 rounded-2xl bg-gray-100 dark:bg-slate-700 border-none outline-none focus:ring-2 focus:ring-blue-500">
-                <input type="number" id="subPrice" placeholder="السعر" class="w-full p-4 rounded-2xl bg-gray-100 dark:bg-slate-700 border-none outline-none focus:ring-2 focus:ring-blue-500">
-                <input type="date" id="subDate" class="w-full p-4 rounded-2xl bg-gray-100 dark:bg-slate-700 border-none outline-none focus:ring-2 focus:ring-blue-500">
-                <button onclick="saveSub()" class="w-full bg-blue-600 text-white py-4 rounded-2xl font-black shadow-lg shadow-blue-500/40 mt-4">حفظ الاشتراك</button>
-                <button onclick="closeModal()" class="w-full text-gray-400 font-bold text-sm">إلغاء</button>
+                <input type="text" id="subName" oninput="updateLogoPreview(this.value)" placeholder="اسم الخدمة (مثل TikTok)" class="w-full p-4 rounded-2xl bg-white/5 border border-white/10 outline-none focus:ring-2 focus:ring-blue-500 text-white">
+                <input type="number" id="subPrice" placeholder="السعر" class="w-full p-4 rounded-2xl bg-white/5 border border-white/10 outline-none focus:ring-2 focus:ring-blue-500 text-white">
+                <input type="date" id="subDate" class="w-full p-4 rounded-2xl bg-white/5 border border-white/10 outline-none focus:ring-2 focus:ring-blue-500 text-white">
+                <button onclick="saveSub()" class="w-full bg-blue-600 text-white py-4 rounded-2xl font-black shadow-lg shadow-blue-600/30">حفظ الاشتراك</button>
+                <button onclick="closeModal()" class="w-full text-gray-500 font-bold text-sm">إلغاء</button>
             </div>
         </div>
     </div>
 
     <script>
-        function toggleDrawer() { document.getElementById('drawer').classList.toggle('active'); }
-        function openModal() { document.getElementById('addModal').style.display = 'flex'; toggleDrawer(); }
-        function closeModal() { document.getElementById('addModal').style.display = 'none'; }
-        
-        function toggleDarkMode() {
-            document.body.classList.toggle('dark-mode');
-            const isDark = document.body.classList.contains('dark-mode');
-            document.getElementById('themeIconImg').src = isDark ? 
-                'https://cdn-icons-png.flaticon.com/512/2698/2698194.png' : 
-                'https://cdn-icons-png.flaticon.com/512/6714/6714978.png';
-            document.getElementById('themeText').innerText = isDark ? 'الوضع النهاري' : 'الوضع الليلي';
-        }
+        const knownLogos = {
+            'netflix': 'https://cdn-icons-png.flaticon.com/512/5977/5977590.png',
+            'spotify': 'https://cdn-icons-png.flaticon.com/512/2111/2111624.png',
+            'tiktok': 'https://cdn-icons-png.flaticon.com/512/3046/3046121.png',
+            'youtube': 'https://cdn-icons-png.flaticon.com/512/174/174883.png',
+            'apple': 'https://img.icons8.com/?size=48&id=81TSi6Gqk0tm&format=png',
+            'amazon': 'https://cdn-icons-png.flaticon.com/512/5968/5968202.png'
+            'discord': 'https://cdn-icons-png.flaticon.com/128/3670/3670157.png'
+            'snapchat': 'https://cdn-icons-png.flaticon.com/128/15707/15707784.png'
+            'chatgpt': 'https://cdn-icons-png.flaticon.com/128/12222/12222560.png'
+            'gemini': 'https://img.icons8.com/?size=48&id=mrNoLXFmvXDX&format=png'
+            'claude': 'https://img.icons8.com/?size=48&id=zQjzFjPpT2Ek&format=png'
+            'amazone prime': 'https://img.icons8.com/?size=48&id=EHtqS186HLz5&format=png'
+            'amazon prime video': 'https://img.icons8.com/?size=48&id=mJTj7Q9EPSVn&format=png'
+            'disney': 'https://img.icons8.com/?size=48&id=o7YMV0TFYOgR&format=png'
+            'cloudflare': 'https://img.icons8.com/?size=80&id=fUGx53gD9Jof&format=png'
+            'adobe creative cloud': 'https://img.icons8.com/?size=48&id=Lq5kMukvoW5c&format=png'
+            'crunchyroll': 'https://img.icons8.com/?size=48&id=zoSCFf_pSWUE&format=png'
+            'deezer': 'https://cdn-icons-png.flaticon.com/128/5968/5968821.png'
+            'hbo max': 'https://img.icons8.com/?size=50&id=9tVdlpWe1F9k&format=png'
+            'dropbox': 'https://img.icons8.com/?size=48&id=13657&format=png'
+            'duolingo': 'https://img.icons8.com/?size=48&id=jJS472JMXlsE&format=png'
+            'rave': 'https://img.icons8.com/?size=50&id=FDehNjzhkWzO&format=png'
+            'kick': 'https://pnghdpro.com/wp-content/themes/pnghdpro/download/social-media-and-brands/kick-app-icon.png'
+            'nord vpn': 'https://uxwing.com/wp-content/themes/uxwing/download/brands-and-social-media/nordvpn-icon.png'
+            'perplexity': 'https://img.icons8.com/?size=50&id=5WrDC03cg9ua&format=png'
+            'express vpn': 'https://img.icons8.com/?size=48&id=EYvWm4GHpQwc&format=png'
+        };
 
-        // جلب اللوجو التلقائي للخدمات الشهيرة
-        function getLogo(name) {
-            const cleanName = name.toLowerCase().trim();
-            // استخدام مكتبة أيقونات للخدمات المشهورة
-            if(cleanName.includes('netflix')) return 'https://cdn-icons-png.flaticon.com/512/5977/5977590.png';
-            if(cleanName.includes('spotify')) return 'https://cdn-icons-png.flaticon.com/512/2111/2111624.png';
-            if(cleanName.includes('youtube')) return 'https://cdn-icons-png.flaticon.com/512/174/174883.png';
-            if(cleanName.includes('apple')) return 'https://cdn-icons-png.flaticon.com/512/0/747.png';
-            if(cleanName.includes('amazon')) return 'https://cdn-icons-png.flaticon.com/512/5968/5968202.png';
-            if(cleanName.includes('playstation')) return 'https://cdn-icons-png.flaticon.com/512/588/588258.png';
-            
-            return `https://logo.clearbit.com/${cleanName}.com?size=100`;
+        function toggleDrawer() { document.getElementById('drawer').classList.toggle('active'); }
+        function openModal() { document.getElementById('addModal').classList.add('active'); toggleDrawer(); }
+        function closeModal() { document.getElementById('addModal').classList.remove('active'); }
+
+        function updateLogoPreview(val) {
+            const preview = document.getElementById('logoPreview');
+            const clean = val.toLowerCase().trim();
+            if (knownLogos[clean]) {
+                preview.innerHTML = `<img src="${knownLogos[clean]}" class="w-full h-full object-contain p-2">`;
+                preview.style.background = "white";
+            } else {
+                preview.innerText = val ? val.charAt(0).toUpperCase() : "+";
+                preview.style.background = "rgba(255,255,255,0.1)";
+            }
         }
 
         function displaySubs() {
             const subs = JSON.parse(localStorage.getItem('mySubs') || '[]');
+            const currency = localStorage.getItem('userCurrency') || 'SAR';
             const listDiv = document.getElementById('subList');
             let total = 0;
             listDiv.innerHTML = '';
 
             subs.forEach((sub, index) => {
                 total += parseFloat(sub.price);
-                const logoUrl = getLogo(sub.name);
+                const logo = knownLogos[sub.name.toLowerCase().trim()] || '';
                 
                 listDiv.innerHTML += `
-                    <div class="glass p-5 rounded-[2rem] flex justify-between items-center transition-all hover:scale-[1.02]">
-                        <div class="flex items-center gap-5">
-                            <div class="w-14 h-14 rounded-2xl overflow-hidden bg-white p-2 border border-gray-100 flex items-center justify-center">
-                                <img src="${logoUrl}" onerror="this.src='https://cdn-icons-png.flaticon.com/512/1048/1048953.png'" class="w-full h-full object-contain">
+                    <div class="glass p-5 rounded-[2rem] flex justify-between items-center transition-all hover:border-blue-500/50">
+                        <div class="flex items-center gap-4">
+                            <div class="w-14 h-14 rounded-2xl bg-white/5 flex items-center justify-center border border-white/5 p-2 overflow-hidden">
+                                ${logo ? `<img src="${logo}" class="w-full h-full object-contain">` : `<span class="text-xl font-black">${sub.name.charAt(0)}</span>`}
                             </div>
                             <div>
-                                <h4 class="font-black text-slate-800 dark:text-white">${sub.name}</h4>
-                                <p class="text-xs font-bold text-blue-500">${sub.price} SAR</p>
+                                <h4 class="font-bold text-white">${sub.name}</h4>
+                                <p class="text-xs font-bold text-blue-400">${sub.price} ${currency}</p>
                             </div>
                         </div>
-                        <div class="flex items-center gap-4">
-                            <button onclick="deleteSub(${index})" class="p-2 bg-red-50 dark:bg-red-900/20 rounded-xl">
-                                <img src="https://cdn-icons-png.flaticon.com/512/6861/6861362.png" class="w-5 h-5 opacity-70">
-                            </button>
-                        </div>
+                        <button onclick="deleteSub(${index})" class="p-3 bg-red-500/10 rounded-2xl hover:bg-red-500/20 transition">
+                            <img src="https://cdn-icons-png.flaticon.com/512/6861/6861362.png" class="w-5 h-5 invert opacity-50">
+                        </button>
                     </div>
                 `;
             });
-            document.getElementById('totalDisplay').innerText = `${total.toLocaleString()} SAR`;
+            document.getElementById('totalDisplay').innerText = `${total.toLocaleString()} ${currency}`;
+            updateStats(subs, currency);
+        }
+
+        function toggleStats() { document.getElementById('statsSection').classList.toggle('hidden'); toggleDrawer(); }
+
+        function updateStats(subs, cur) {
+            const content = document.getElementById('statsContent');
+            if(subs.length === 0) { content.innerHTML = "<p class='text-xs text-center text-gray-500'>لا توجد بيانات</p>"; return; }
+            
+            const total = subs.reduce((acc, s) => acc + parseFloat(s.price), 0);
+            content.innerHTML = subs.slice(0, 3).map(s => {
+                const perc = ((s.price / total) * 100).toFixed(0);
+                return `
+                    <div class="flex items-center gap-3">
+                        <div class="flex-1 bg-white/5 h-2 rounded-full overflow-hidden">
+                            <div class="bg-blue-600 h-full" style="width: ${perc}%"></div>
+                        </div>
+                        <span class="text-[10px] font-bold w-20 text-left opacity-60">${s.name} (${perc}%)</span>
+                    </div>
+                `;
+            }).join('');
         }
 
         function saveSub() {
             const name = document.getElementById('subName').value;
             const price = document.getElementById('subPrice').value;
             const date = document.getElementById('subDate').value;
-
-            if(!name || !price || !date) return alert("أكمل البيانات");
+            if(!name || !price || !date) return alert("البيانات ناقصة");
 
             const subs = JSON.parse(localStorage.getItem('mySubs') || '[]');
             subs.push({ name, price, date });
             localStorage.setItem('mySubs', JSON.stringify(subs));
             
-            confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 }, colors: ['#3b82f6', '#1e3a8a'] });
+            confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 }, colors: ['#2563eb', '#ffffff'] });
             closeModal();
             displaySubs();
         }
@@ -184,6 +216,23 @@
             subs.splice(i, 1);
             localStorage.setItem('mySubs', JSON.stringify(subs));
             displaySubs();
+        }
+
+        function changeCurrency() {
+            localStorage.setItem('userCurrency', document.getElementById('currencySelect').value);
+            displaySubs();
+        }
+
+        function exportData() {
+            const data = localStorage.getItem('mySubs');
+            if(!data) return alert("لا توجد بيانات لتصديرها");
+            const blob = new Blob([data], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `sub-manager-backup-${new Date().toLocaleDateString()}.json`;
+            a.click();
+            alert("تم حفظ النسخة بنجاح!");
         }
 
         displaySubs();
