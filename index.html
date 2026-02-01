@@ -6,63 +6,116 @@
     <title>مدير اشتراكاتي | Sub Manager</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        body { font-family: system-ui, -apple-system, sans-serif; background-color: #f8fafc; }
+        body { font-family: system-ui, -apple-system, sans-serif; background-color: #f1f5f9; }
     </style>
 </head>
 <body class="p-5">
     <div class="max-w-md mx-auto">
-        <header class="text-center mb-8">
+        <header class="text-center mb-6">
             <h1 class="text-3xl font-bold text-blue-600">اشتراكاتي</h1>
-            <p class="text-gray-500">تحكم بمصاريفك بكل أمان</p>
+            <div id="totalSection" class="mt-4 bg-blue-100 p-4 rounded-2xl border border-blue-200">
+                <p class="text-gray-600 text-sm">إجمالي المصاريف الشهرية</p>
+                <h2 id="totalDisplay" class="text-2xl font-black text-blue-800">0</h2>
+            </div>
         </header>
 
-        <div class="bg-white p-6 rounded-2xl shadow-sm mb-6">
-            <h2 class="font-bold mb-4">إضافة اشتراك جديد</h2>
+        <div class="mb-6 flex items-center justify-between bg-white p-3 rounded-xl shadow-sm">
+            <label class="text-sm font-bold text-gray-600">العملة:</label>
+            <select id="currencySelect" onchange="changeCurrency()" class="bg-gray-50 border rounded-lg p-1 text-sm outline-none">
+                <option value="ريال">ريال سعودي</option>
+                <option value="$">دولار (USD)</option>
+                <option value="درهم">درهم إماراتي</option>
+                <option value="د.ك">دينار كويتي</option>
+                <option value="€">يورو (EUR)</option>
+            </select>
+        </div>
+
+        <div class="bg-white p-6 rounded-2xl shadow-md mb-8">
+            <h2 class="font-bold mb-4 text-gray-700">إضافة اشتراك جديد</h2>
             <div class="space-y-3">
-                <input type="text" id="subName" placeholder="اسم الخدمة (مثل نيتفلكس)" class="w-full p-2 border rounded-lg outline-none focus:ring-2 focus:ring-blue-400">
-                <input type="number" id="subPrice" placeholder="السعر" class="w-full p-2 border rounded-lg outline-none focus:ring-2 focus:ring-blue-400">
-                <input type="date" id="subDate" class="w-full p-2 border rounded-lg outline-none focus:ring-2 focus:ring-blue-400">
-                <button onclick="saveSub()" class="w-full bg-blue-600 text-white py-2 rounded-lg font-bold hover:bg-blue-700 transition">حفظ</button>
+                <input type="text" id="subName" placeholder="اسم الخدمة" class="w-full p-3 border rounded-xl outline-none focus:ring-2 focus:ring-blue-400">
+                <input type="number" id="subPrice" placeholder="السعر" class="w-full p-3 border rounded-xl outline-none focus:ring-2 focus:ring-blue-400">
+                <input type="date" id="subDate" class="w-full p-3 border rounded-xl outline-none focus:ring-2 focus:ring-blue-400">
+                <button onclick="saveSub()" class="w-full bg-blue-600 text-white py-3 rounded-xl font-bold hover:bg-blue-700 transition shadow-lg shadow-blue-200">حفظ الاشتراك</button>
             </div>
         </div>
 
-        <div id="subList" class="space-y-4">
-            </div>
+        <div id="subList" class="space-y-4"></div>
     </div>
 
     <script>
         // دالة لحساب الأيام المتبقية
         function getDaysLeft(date) {
-            const diff = new Date(date) - new Date();
+            const today = new Date();
+            today.setHours(0,0,0,0);
+            const target = new Date(date);
+            target.setHours(0,0,0,0);
+            const diff = target - today;
             return Math.ceil(diff / (1000 * 60 * 60 * 24));
         }
 
-        // دالة لعرض الاشتراكات
+        // تغيير العملة وحفظها
+        function changeCurrency() {
+            localStorage.setItem('userCurrency', document.getElementById('currencySelect').value);
+            displaySubs();
+        }
+
+        // حذف اشتراك
+        function deleteSub(index) {
+            if(confirm('هل أنت متأكد من حذف هذا الاشتراك؟')) {
+                let subs = JSON.parse(localStorage.getItem('mySubs') || '[]');
+                subs.splice(index, 1);
+                localStorage.setItem('mySubs', JSON.stringify(subs));
+                displaySubs();
+            }
+        }
+
+        // عرض الاشتراكات وحساب الإجمالي
         function displaySubs() {
             const subs = JSON.parse(localStorage.getItem('mySubs') || '[]');
+            const currency = localStorage.getItem('userCurrency') || 'ريال';
+            document.getElementById('currencySelect').value = currency;
+            
             const listDiv = document.getElementById('subList');
+            const totalDisplay = document.getElementById('totalDisplay');
             listDiv.innerHTML = '';
+            
+            let total = 0;
 
             subs.forEach((sub, index) => {
+                total += parseFloat(sub.price);
                 const days = getDaysLeft(sub.date);
+                
+                let statusText = `باقي ${days} أيام`;
+                let colorClass = "text-green-600";
+                
+                if (days === 0) { statusText = "يستحق اليوم ⚠️"; colorClass = "text-orange-500"; }
+                else if (days < 0) { statusText = "منتهي"; colorClass = "text-red-500"; }
+                else if (days <= 3) { colorClass = "text-red-500"; }
+
                 listDiv.innerHTML += `
-                    <div class="bg-white p-4 rounded-xl shadow-sm border-r-4 border-blue-500 flex justify-between items-center">
-                        <div>
-                            <h3 class="font-bold">${sub.name}</h3>
-                            <p class="text-sm text-gray-500">${sub.price} ريال</p>
+                    <div class="bg-white p-4 rounded-2xl shadow-sm border-r-4 border-blue-500 flex justify-between items-center transition-all hover:scale-[1.02]">
+                        <div class="flex-1">
+                            <h3 class="font-bold text-gray-800">${sub.name}</h3>
+                            <p class="text-sm text-gray-500">${sub.price} ${currency}</p>
                         </div>
-                        <div class="text-left">
-                            <span class="text-sm font-semibold ${days <= 3 ? 'text-red-500' : 'text-green-600'}">
-                                باقي ${days} أيام
+                        <div class="text-center px-4">
+                            <span class="text-xs font-bold px-2 py-1 rounded-full bg-gray-100 ${colorClass}">
+                                ${statusText}
                             </span>
-                            <p class="text-xs text-gray-400">${sub.date}</p>
                         </div>
+                        <button onclick="deleteSub(${index})" class="text-gray-300 hover:text-red-500 transition">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                            </svg>
+                        </button>
                     </div>
                 `;
             });
+
+            totalDisplay.innerText = `${total.toFixed(2)} ${currency}`;
         }
 
-        // دالة الحفظ في LocalStorage
         function saveSub() {
             const name = document.getElementById('subName').value;
             const price = document.getElementById('subPrice').value;
@@ -74,11 +127,12 @@
             subs.push({ name, price, date });
             localStorage.setItem('mySubs', JSON.stringify(subs));
             
-            displaySubs(); // تحديث القائمة
-            document.getElementById('subName').value = ''; // تفريغ الحقول
+            displaySubs();
+            document.getElementById('subName').value = '';
+            document.getElementById('subPrice').value = '';
+            document.getElementById('subDate').value = '';
         }
 
-        // تشغيل العرض عند فتح الصفحة
         displaySubs();
     </script>
 </body>
