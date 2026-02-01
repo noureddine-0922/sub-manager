@@ -8,124 +8,136 @@
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
     <style>
-        body { font-family: 'Cairo', sans-serif; background-color: #0b1120; color: white; transition: 0.3s; }
+        body { font-family: 'Cairo', sans-serif; background-color: #0b1120; color: white; transition: 0.3s; overflow-x: hidden; }
         .glass { background: rgba(30, 41, 59, 0.7); backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.1); }
         .credit-card { background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); border: 1px solid rgba(255,255,255,0.05); }
-        .drawer { transition: 0.4s cubic-bezier(0.4, 0, 0.2, 1); transform: translateX(100%); position: fixed; inset-y: 0; right: 0; width: 280px; z-index: 100; }
+        .drawer { transition: 0.4s cubic-bezier(0.4, 0, 0.2, 1); transform: translateX(100%); position: fixed; inset-y: 0; right: 0; width: 280px; z-index: 1000; }
         .drawer.active { transform: translateX(0); }
-        .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 200; align-items: center; justify-content: center; padding: 20px; }
+        .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 2000; align-items: center; justify-content: center; padding: 20px; backdrop-filter: blur(5px); }
         .modal.active { display: flex; }
     </style>
 </head>
 <body class="min-h-screen pb-10">
 
-    <div class="p-6 flex justify-between items-center">
-        <button onclick="toggleDrawer()" class="p-2 glass rounded-xl">
-            <img src="https://cdn-icons-png.flaticon.com/512/8166/8166544.png" class="w-7 h-7 invert">
+    <div class="p-6 flex justify-between items-center relative z-10">
+        <button onclick="toggleDrawer()" class="p-2 glass rounded-2xl hover:scale-110 transition active:scale-95">
+            <img src="https://cdn-icons-png.flaticon.com/512/8166/8166544.png" class="w-7 h-7 invert pointer-events-none">
         </button>
-        <h1 class="text-xl font-black">مدير اشتراكاتي</h1>
+        <h1 class="text-xl font-black tracking-tight">مدير اشتراكاتي</h1>
         <div class="w-10"></div>
     </div>
 
     <div class="max-w-md mx-auto px-6">
-        <div class="credit-card rounded-[2.5rem] p-8 text-white mb-8 relative overflow-hidden shadow-2xl">
+        <div class="credit-card rounded-[2.5rem] p-8 text-white mb-8 relative overflow-hidden shadow-2xl border border-white/5">
+            <div class="absolute top-0 right-0 w-32 h-32 bg-blue-500/10 rounded-full -mr-16 -mt-16 blur-2xl"></div>
             <div class="flex justify-between items-start mb-10">
                 <div>
-                    <p class="text-blue-400 text-xs font-bold mb-1">إجمالي المصاريف</p>
-                    <h2 id="totalDisplay" class="text-4xl font-black tracking-tight text-white">0 SAR</h2>
+                    <p class="text-blue-400 text-xs font-bold mb-1 uppercase tracking-tighter">إجمالي المصاريف</p>
+                    <h2 id="totalDisplay" class="text-4xl font-black tracking-tight">0 SAR</h2>
                 </div>
-                <img src="https://cdn-icons-png.flaticon.com/512/9334/9334611.png" class="w-12">
+                <img src="https://cdn-icons-png.flaticon.com/512/9334/9334611.png" class="w-12 drop-shadow-lg">
             </div>
             <div class="flex justify-between items-end">
-                <p class="text-sm font-bold opacity-80 tracking-widest text-blue-200">مدير الاشتراكات</p>
+                <p class="text-sm font-bold opacity-80 tracking-widest text-blue-100 uppercase">Sub Manager Pro</p>
                 <div class="flex -space-x-2">
-                    <div class="w-8 h-8 rounded-full bg-orange-500 opacity-80 border border-white/10"></div>
-                    <div class="w-8 h-8 rounded-full bg-red-600 opacity-80 border border-white/10"></div>
+                    <div class="w-8 h-8 rounded-full bg-orange-500 opacity-90 border border-white/20 shadow-inner"></div>
+                    <div class="w-8 h-8 rounded-full bg-red-600 opacity-90 border border-white/20 shadow-inner"></div>
                 </div>
             </div>
         </div>
 
-        <div id="statsSection" class="mb-8 glass p-4 rounded-3xl hidden">
-            <h3 class="text-xs font-bold text-gray-400 mb-3 text-center">تحليل المصاريف</h3>
-            <div id="statsContent" class="space-y-2"></div>
+        <div id="statsSection" class="mb-8 glass p-6 rounded-[2rem] hidden border border-white/5">
+            <h3 class="text-xs font-bold text-blue-400 mb-4 text-center uppercase tracking-widest">تحليل المصاريف الذكي</h3>
+            <div id="statsContent" class="space-y-4"></div>
         </div>
 
         <div id="subList" class="space-y-4"></div>
     </div>
 
-    <div id="drawer" class="drawer glass p-8 shadow-2xl border-l border-white/5">
-        <div class="flex justify-between items-center mb-10">
+    <div id="drawer" class="drawer glass p-8 shadow-2xl border-l border-white/10">
+        <div class="flex justify-between items-center mb-12">
             <h2 class="text-xl font-black">القائمة</h2>
-            <button onclick="toggleDrawer()" class="text-2xl opacity-50">×</button>
+            <button onclick="toggleDrawer()" class="text-3xl opacity-40 hover:opacity-100 transition">×</button>
         </div>
         <nav class="space-y-4">
-            <button onclick="toggleDrawer()" class="w-full flex items-center gap-4 p-4 rounded-2xl bg-blue-600/20 text-blue-400 font-bold">
+            <button onclick="toggleDrawer()" class="w-full flex items-center gap-4 p-4 rounded-2xl bg-blue-600/20 text-blue-400 font-bold border border-blue-500/20">
                 <img src="https://cdn-icons-png.flaticon.com/512/1946/1946436.png" class="w-5 h-5 invert"> الرئيسية
             </button>
-            <button onclick="openModal()" class="w-full flex items-center gap-4 p-4 rounded-2xl hover:bg-white/5 transition font-bold">
-                <img src="https://cdn-icons-png.flaticon.com/512/10308/10308996.png" class="w-5 h-5 invert"> إضافة اشتراك
+            <button onclick="openModal()" class="w-full flex items-center gap-4 p-4 rounded-2xl hover:bg-white/5 transition font-bold border border-transparent hover:border-white/10">
+                <img src="https://cdn-icons-png.flaticon.com/512/4315/4315609.png" class="w-5 h-5 invert"> إضافة اشتراك
             </button>
-            <button onclick="toggleStats()" class="w-full flex items-center gap-4 p-4 rounded-2xl hover:bg-white/5 transition font-bold">
+            <button onclick="toggleStats()" class="w-full flex items-center gap-4 p-4 rounded-2xl hover:bg-white/5 transition font-bold border border-transparent hover:border-white/10">
                 <img src="https://cdn-icons-png.flaticon.com/512/3501/3501173.png" class="w-5 h-5 invert"> الإحصائيات
             </button>
-            <div class="pt-6 mt-6 border-t border-white/5 space-y-4">
-                <select id="currencySelect" onchange="changeCurrency()" class="w-full bg-transparent border border-white/10 p-3 rounded-xl outline-none text-sm font-bold">
-                    <option value="SAR" class="text-black">ريال (SAR)</option>
-                    <option value="USD" class="text-black">دولار (USD)</option>
-                    <option value="AED" class="text-black">درهم (AED)</option>
-                    <option value="KWD" class="text-black">دينار (KWD)</option>
+            <div class="pt-8 mt-8 border-t border-white/10 space-y-4">
+                <label class="text-[10px] font-bold text-gray-500 uppercase px-2">العملة المفضلة</label>
+                <select id="currencySelect" onchange="changeCurrency()" class="w-full bg-slate-800 border border-white/10 p-4 rounded-2xl outline-none text-sm font-bold appearance-none">
+                    <option value="SAR">ريال سعودي (SAR)</option>
+                    <option value="USD">دولار أمريكي (USD)</option>
+                    <option value="AED">درهم إماراتي (AED)</option>
+                    <option value="KWD">دينار كويتي (KWD)</option>
                 </select>
-                <button onclick="exportData()" class="w-full text-right text-xs text-gray-400 flex items-center gap-2">
-                    <img src="https://cdn-icons-png.flaticon.com/512/2874/2874091.png" class="w-4 h-4 opacity-50 invert"> حفظ نسخة احتياطية
+                <button onclick="exportData()" class="w-full flex items-center justify-center gap-2 p-4 rounded-2xl text-xs text-gray-400 hover:text-white transition bg-white/5">
+                    <img src="https://cdn-icons-png.flaticon.com/512/2874/2874091.png" class="w-4 h-4 invert opacity-50"> حفظ نسخة احتياطية
                 </button>
             </div>
         </nav>
     </div>
 
     <div id="addModal" class="modal">
-        <div class="glass w-full max-w-sm rounded-[2.5rem] p-8 shadow-2xl relative">
-            <div class="text-center mb-6">
-                <div id="logoPreview" class="w-20 h-20 mx-auto bg-white/10 rounded-3xl flex items-center justify-center mb-4 text-3xl font-black border border-white/10">+</div>
-                <h3 class="text-xl font-black text-white">إضافة اشتراك</h3>
+        <div class="glass w-full max-w-sm rounded-[3rem] p-8 shadow-2xl relative border border-white/10 scale-95 transition-all">
+            <div class="text-center mb-8">
+                <div id="logoPreview" class="w-24 h-24 mx-auto bg-white/5 rounded-[2rem] flex items-center justify-center mb-4 text-4xl font-black border border-white/10 shadow-inner overflow-hidden">
+                    <span class="opacity-20">+</span>
+                </div>
+                <h3 class="text-xl font-black">إضافة اشتراك جديد</h3>
             </div>
             <div class="space-y-4">
-                <input type="text" id="subName" oninput="updateLogoPreview(this.value)" placeholder="اسم الخدمة (مثل TikTok)" class="w-full p-4 rounded-2xl bg-white/5 border border-white/10 outline-none focus:ring-2 focus:ring-blue-500 text-white">
-                <input type="number" id="subPrice" placeholder="السعر" class="w-full p-4 rounded-2xl bg-white/5 border border-white/10 outline-none focus:ring-2 focus:ring-blue-500 text-white">
-                <input type="date" id="subDate" class="w-full p-4 rounded-2xl bg-white/5 border border-white/10 outline-none focus:ring-2 focus:ring-blue-500 text-white">
-                <button onclick="saveSub()" class="w-full bg-blue-600 text-white py-4 rounded-2xl font-black shadow-lg shadow-blue-600/30">حفظ الاشتراك</button>
-                <button onclick="closeModal()" class="w-full text-gray-500 font-bold text-sm">إلغاء</button>
+                <input type="text" id="subName" oninput="updateLogoPreview(this.value)" placeholder="مثلاً: Netflix" class="w-full p-5 rounded-2xl bg-white/5 border border-white/10 outline-none focus:ring-2 focus:ring-blue-500 transition-all text-white placeholder:text-gray-600">
+                <input type="number" id="subPrice" placeholder="السعر" class="w-full p-5 rounded-2xl bg-white/5 border border-white/10 outline-none focus:ring-2 focus:ring-blue-500 text-white placeholder:text-gray-600">
+                <input type="date" id="subDate" class="w-full p-5 rounded-2xl bg-white/5 border border-white/10 outline-none focus:ring-2 focus:ring-blue-500 text-white">
+                <button onclick="saveSub()" class="w-full bg-blue-600 text-white py-5 rounded-2xl font-black shadow-xl shadow-blue-600/20 active:scale-95 transition-all mt-4">تأكيد وحفظ</button>
+                <button onclick="closeModal()" class="w-full text-gray-500 font-bold text-sm hover:text-gray-300">إلغاء العملية</button>
             </div>
         </div>
     </div>
 
     <script>
+        // روابط الاشتراكات التي أضفتها أنت مع روابط إضافية للكاتاجوري
         const knownLogos = {
             'netflix': 'https://cdn-icons-png.flaticon.com/512/5977/5977590.png',
             'spotify': 'https://cdn-icons-png.flaticon.com/512/2111/2111624.png',
             'tiktok': 'https://cdn-icons-png.flaticon.com/512/3046/3046121.png',
             'youtube': 'https://cdn-icons-png.flaticon.com/512/174/174883.png',
             'apple': 'https://img.icons8.com/?size=48&id=81TSi6Gqk0tm&format=png',
-            'amazon': 'https://cdn-icons-png.flaticon.com/512/5968/5968202.png'
-            'discord': 'https://cdn-icons-png.flaticon.com/128/3670/3670157.png'
-            'snapchat': 'https://cdn-icons-png.flaticon.com/128/15707/15707784.png'
-            'chatgpt': 'https://cdn-icons-png.flaticon.com/128/12222/12222560.png'
-            'gemini': 'https://img.icons8.com/?size=48&id=mrNoLXFmvXDX&format=png'
-            'claude': 'https://img.icons8.com/?size=48&id=zQjzFjPpT2Ek&format=png'
-            'amazone prime': 'https://img.icons8.com/?size=48&id=EHtqS186HLz5&format=png'
-            'amazon prime video': 'https://img.icons8.com/?size=48&id=mJTj7Q9EPSVn&format=png'
-            'disney': 'https://img.icons8.com/?size=48&id=o7YMV0TFYOgR&format=png'
-            'cloudflare': 'https://img.icons8.com/?size=80&id=fUGx53gD9Jof&format=png'
-            'adobe creative cloud': 'https://img.icons8.com/?size=48&id=Lq5kMukvoW5c&format=png'
-            'crunchyroll': 'https://img.icons8.com/?size=48&id=zoSCFf_pSWUE&format=png'
-            'deezer': 'https://cdn-icons-png.flaticon.com/128/5968/5968821.png'
-            'hbo max': 'https://img.icons8.com/?size=50&id=9tVdlpWe1F9k&format=png'
-            'dropbox': 'https://img.icons8.com/?size=48&id=13657&format=png'
-            'duolingo': 'https://img.icons8.com/?size=48&id=jJS472JMXlsE&format=png'
-            'rave': 'https://img.icons8.com/?size=50&id=FDehNjzhkWzO&format=png'
-            'kick': 'https://pnghdpro.com/wp-content/themes/pnghdpro/download/social-media-and-brands/kick-app-icon.png'
-            'nord vpn': 'https://uxwing.com/wp-content/themes/uxwing/download/brands-and-social-media/nordvpn-icon.png'
-            'perplexity': 'https://img.icons8.com/?size=50&id=5WrDC03cg9ua&format=png'
+            'amazon': 'https://cdn-icons-png.flaticon.com/512/5968/5968202.png',
+            'discord': 'https://cdn-icons-png.flaticon.com/128/3670/3670157.png',
+            'snapchat': 'https://cdn-icons-png.flaticon.com/128/15707/15707784.png',
+            'chatgpt': 'https://cdn-icons-png.flaticon.com/128/12222/12222560.png',
+            'gemini': 'https://img.icons8.com/?size=48&id=mrNoLXFmvXDX&format=png',
+            'claude': 'https://img.icons8.com/?size=48&id=zQjzFjPpT2Ek&format=png',
+            'amazone prime': 'https://img.icons8.com/?size=48&id=EHtqS186HLz5&format=png',
+            'amazon prime video': 'https://img.icons8.com/?size=48&id=mJTj7Q9EPSVn&format=png',
+            'disney': 'https://img.icons8.com/?size=48&id=o7YMV0TFYOgR&format=png',
+            'cloudflare': 'https://img.icons8.com/?size=80&id=fUGx53gD9Jof&format=png',
+            'adobe creative cloud': 'https://img.icons8.com/?size=48&id=Lq5kMukvoW5c&format=png',
+            'crunchyroll': 'https://img.icons8.com/?size=48&id=zoSCFf_pSWUE&format=png',
+            'deezer': 'https://cdn-icons-png.flaticon.com/128/5968/5968821.png',
+            'hbo max': 'https://img.icons8.com/?size=50&id=9tVdlpWe1F9k&format=png',
+            'dropbox': 'https://img.icons8.com/?size=48&id=13657&format=png',
+            'duolingo': 'https://img.icons8.com/?size=48&id=jJS472JMXlsE&format=png',
+            'rave': 'https://img.icons8.com/?size=50&id=FDehNjzhkWzO&format=png',
+            'kick': 'https://pnghdpro.com/wp-content/themes/pnghdpro/download/social-media-and-brands/kick-app-icon.png',
+            'nord vpn': 'https://uxwing.com/wp-content/themes/uxwing/download/brands-and-social-media/nordvpn-icon.png',
+            'perplexity': 'https://img.icons8.com/?size=50&id=5WrDC03cg9ua&format=png',
             'express vpn': 'https://img.icons8.com/?size=48&id=EYvWm4GHpQwc&format=png'
+        };
+
+        const categoryKeywords = {
+            'gym': 'https://cdn-icons-png.flaticon.com/512/2964/2964514.png',
+            'food': 'https://cdn-icons-png.flaticon.com/512/2276/2276931.png',
+            'game': 'https://cdn-icons-png.flaticon.com/512/686/686589.png',
+            'learn': 'https://cdn-icons-png.flaticon.com/512/2436/2436636.png'
         };
 
         function toggleDrawer() { document.getElementById('drawer').classList.toggle('active'); }
@@ -135,12 +147,20 @@
         function updateLogoPreview(val) {
             const preview = document.getElementById('logoPreview');
             const clean = val.toLowerCase().trim();
-            if (knownLogos[clean]) {
-                preview.innerHTML = `<img src="${knownLogos[clean]}" class="w-full h-full object-contain p-2">`;
+            
+            let foundSrc = knownLogos[clean];
+            if(!foundSrc) {
+                for (let key in categoryKeywords) {
+                    if(clean.includes(key)) foundSrc = categoryKeywords[key];
+                }
+            }
+
+            if (foundSrc) {
+                preview.innerHTML = `<img src="${foundSrc}" class="w-full h-full object-contain p-4 scale-110">`;
                 preview.style.background = "white";
             } else {
-                preview.innerText = val ? val.charAt(0).toUpperCase() : "+";
-                preview.style.background = "rgba(255,255,255,0.1)";
+                preview.innerHTML = `<span class="text-white opacity-90">${val ? val.charAt(0).toUpperCase() : "+"}</span>`;
+                preview.style.background = "rgba(255,255,255,0.05)";
             }
         }
 
@@ -153,21 +173,26 @@
 
             subs.forEach((sub, index) => {
                 total += parseFloat(sub.price);
-                const logo = knownLogos[sub.name.toLowerCase().trim()] || '';
+                let logo = knownLogos[sub.name.toLowerCase().trim()];
+                if(!logo) {
+                    for (let key in categoryKeywords) {
+                        if(sub.name.toLowerCase().includes(key)) logo = categoryKeywords[key];
+                    }
+                }
                 
                 listDiv.innerHTML += `
-                    <div class="glass p-5 rounded-[2rem] flex justify-between items-center transition-all hover:border-blue-500/50">
-                        <div class="flex items-center gap-4">
-                            <div class="w-14 h-14 rounded-2xl bg-white/5 flex items-center justify-center border border-white/5 p-2 overflow-hidden">
-                                ${logo ? `<img src="${logo}" class="w-full h-full object-contain">` : `<span class="text-xl font-black">${sub.name.charAt(0)}</span>`}
+                    <div class="glass p-5 rounded-[2.5rem] flex justify-between items-center transition-all border border-transparent hover:border-blue-500/30">
+                        <div class="flex items-center gap-5">
+                            <div class="w-16 h-16 rounded-[1.5rem] bg-white/5 flex items-center justify-center border border-white/5 p-3 overflow-hidden shadow-inner">
+                                ${logo ? `<img src="${logo}" class="w-full h-full object-contain">` : `<span class="text-2xl font-black opacity-20">${sub.name.charAt(0)}</span>`}
                             </div>
                             <div>
-                                <h4 class="font-bold text-white">${sub.name}</h4>
-                                <p class="text-xs font-bold text-blue-400">${sub.price} ${currency}</p>
+                                <h4 class="font-black text-white text-lg leading-tight">${sub.name}</h4>
+                                <p class="text-xs font-black text-blue-400 mt-1">${sub.price} ${currency}</p>
                             </div>
                         </div>
-                        <button onclick="deleteSub(${index})" class="p-3 bg-red-500/10 rounded-2xl hover:bg-red-500/20 transition">
-                            <img src="https://cdn-icons-png.flaticon.com/512/6861/6861362.png" class="w-5 h-5 invert opacity-50">
+                        <button onclick="deleteSub(${index})" class="p-4 bg-red-500/10 rounded-2xl hover:bg-red-500/20 transition active:scale-90">
+                            <img src="https://cdn-icons-png.flaticon.com/512/6861/6861362.png" class="w-5 h-5 invert opacity-40">
                         </button>
                     </div>
                 `;
@@ -180,17 +205,24 @@
 
         function updateStats(subs, cur) {
             const content = document.getElementById('statsContent');
-            if(subs.length === 0) { content.innerHTML = "<p class='text-xs text-center text-gray-500'>لا توجد بيانات</p>"; return; }
-            
             const total = subs.reduce((acc, s) => acc + parseFloat(s.price), 0);
-            content.innerHTML = subs.slice(0, 3).map(s => {
-                const perc = ((s.price / total) * 100).toFixed(0);
+            
+            if(subs.length === 0) { content.innerHTML = "<p class='text-xs text-center text-gray-500'>أضف اشتراكات لعرض التحليل</p>"; return; }
+            
+            // ترتيب من الأعلى سعراً
+            const sorted = [...subs].sort((a,b) => b.price - a.price).slice(0, 3);
+            
+            content.innerHTML = sorted.map(s => {
+                const perc = total > 0 ? ((s.price / total) * 100).toFixed(0) : 0;
                 return `
-                    <div class="flex items-center gap-3">
-                        <div class="flex-1 bg-white/5 h-2 rounded-full overflow-hidden">
-                            <div class="bg-blue-600 h-full" style="width: ${perc}%"></div>
+                    <div class="space-y-2">
+                        <div class="flex justify-between text-[10px] font-bold uppercase tracking-widest text-gray-400 px-1">
+                            <span>${s.name}</span>
+                            <span>${perc}%</span>
                         </div>
-                        <span class="text-[10px] font-bold w-20 text-left opacity-60">${s.name} (${perc}%)</span>
+                        <div class="w-full bg-white/5 h-3 rounded-full overflow-hidden p-[2px] border border-white/5">
+                            <div class="bg-gradient-to-r from-blue-600 to-indigo-400 h-full rounded-full transition-all duration-1000 shadow-lg shadow-blue-500/20" style="width: ${perc}%"></div>
+                        </div>
                     </div>
                 `;
             }).join('');
@@ -200,15 +232,18 @@
             const name = document.getElementById('subName').value;
             const price = document.getElementById('subPrice').value;
             const date = document.getElementById('subDate').value;
-            if(!name || !price || !date) return alert("البيانات ناقصة");
+            if(!name || !price || !date) return alert("يرجى ملء جميع الحقول");
 
             const subs = JSON.parse(localStorage.getItem('mySubs') || '[]');
             subs.push({ name, price, date });
             localStorage.setItem('mySubs', JSON.stringify(subs));
             
-            confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 }, colors: ['#2563eb', '#ffffff'] });
+            confetti({ particleCount: 150, spread: 80, origin: { y: 0.7 }, colors: ['#3b82f6', '#ffffff', '#6366f1'] });
             closeModal();
             displaySubs();
+            document.getElementById('subName').value = '';
+            document.getElementById('subPrice').value = '';
+            document.getElementById('subDate').value = '';
         }
 
         function deleteSub(i) {
@@ -225,14 +260,15 @@
 
         function exportData() {
             const data = localStorage.getItem('mySubs');
-            if(!data) return alert("لا توجد بيانات لتصديرها");
+            if(!data || data === "[]") return alert("لا توجد بيانات");
             const blob = new Blob([data], { type: 'application/json' });
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = `sub-manager-backup-${new Date().toLocaleDateString()}.json`;
+            a.download = `backup-${new Date().toISOString().slice(0,10)}.json`;
+            document.body.appendChild(a);
             a.click();
-            alert("تم حفظ النسخة بنجاح!");
+            document.body.removeChild(a);
         }
 
         displaySubs();
