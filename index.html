@@ -7,46 +7,46 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
     <style>
-        :root { --main-bg: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
-        body { background-color: #f8fafc; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; overflow-x: hidden; }
-        .dark-mode { background-color: #0f172a; color: white; }
-        .glass { background: rgba(255, 255, 255, 0.7); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.2); }
-        .dark-mode .glass { background: rgba(30, 41, 59, 0.7); border-color: rgba(255,255,255,0.1); }
+        body { background-color: #f0f4f8; font-family: 'Cairo', sans-serif; transition: 0.3s; }
+        .dark-mode { background-color: #0b1120; color: white; }
+        .glass { background: rgba(255, 255, 255, 0.8); backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.3); }
+        .dark-mode .glass { background: rgba(30, 41, 59, 0.6); border-color: rgba(255,255,255,0.1); }
         .credit-card { 
-            background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2);
-            transition: transform 0.3s ease;
+            background: linear-gradient(135deg, #0f172a 0%, #334155 100%);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.2);
         }
-        .drawer { transition: transform 0.3s ease-in-out; transform: translateX(100%); }
+        .drawer { transition: 0.4s cubic-bezier(0.4, 0, 0.2, 1); transform: translateX(100%); }
         .drawer.active { transform: translateX(0); }
-        .sub-item { transition: all 0.3s ease; }
-        .sub-item.deleting { transform: translateX(-100%); opacity: 0; }
+        .nav-item { transition: 0.2s; border-radius: 15px; }
+        .nav-item:hover { background: rgba(59, 130, 246, 0.1); }
     </style>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap" rel="stylesheet">
 </head>
 <body class="min-h-screen">
 
-    <div class="p-5 flex justify-between items-center relative z-20">
-        <button onclick="toggleDrawer()" class="p-2 bg-white dark:bg-slate-800 rounded-lg shadow-sm">
-            <img src="https://cdn-icons-png.flaticon.com/512/1828/1828859.png" class="w-6 h-6" alt="menu">
+    <div class="p-6 flex justify-between items-center relative z-20">
+        <button onclick="toggleDrawer()" class="p-2 glass rounded-2xl shadow-sm">
+            <img src="https://cdn-icons-png.flaticon.com/512/5068/5068642.png" class="w-7 h-7" alt="القائمة">
         </button>
-        <h1 class="text-xl font-bold dark:text-white">Sub Manager</h1>
-        <div class="w-10"></div> </div>
+        <h1 class="text-xl font-black text-slate-800 dark:text-white">اشتراكاتي</h1>
+        <div class="w-10"></div>
+    </div>
 
-    <div class="max-w-md mx-auto px-5">
-        <div class="credit-card rounded-[2rem] p-8 text-white mb-10 relative overflow-hidden">
-            <div class="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -mr-16 -mt-16"></div>
+    <div class="max-w-md mx-auto px-6">
+        <div class="credit-card rounded-[2.5rem] p-8 text-white mb-10 relative overflow-hidden border border-white/10">
+            <div class="absolute -right-10 -top-10 w-40 h-40 bg-blue-500/10 rounded-full blur-3xl"></div>
             <div class="flex justify-between items-start mb-12">
                 <div>
-                    <p class="text-xs opacity-70 mb-1 font-medium">إجمالي اشتراكاتك</p>
-                    <h2 id="totalDisplay" class="text-3xl font-bold tracking-tight">0 SAR</h2>
+                    <p class="text-blue-300 text-xs font-bold mb-1 tracking-widest">إجمالي المصاريف</p>
+                    <h2 id="totalDisplay" class="text-4xl font-black">0 SAR</h2>
                 </div>
-                <img src="https://cdn-icons-png.flaticon.com/512/6404/6404100.png" class="w-12 opacity-50">
+                <img src="https://cdn-icons-png.flaticon.com/512/9334/9334611.png" class="w-12 shadow-sm">
             </div>
             <div class="flex justify-between items-end">
-                <p class="text-sm font-mono tracking-widest uppercase">Premium User</p>
-                <div class="flex -space-x-3">
-                    <div class="w-8 h-8 rounded-full bg-yellow-400 opacity-80"></div>
-                    <div class="w-8 h-8 rounded-full bg-red-500 opacity-80"></div>
+                <p class="text-sm font-mono opacity-50">PREMIUM ACCOUNT</p>
+                <div class="flex">
+                    <div class="w-10 h-10 rounded-full bg-orange-500/80 blur-[1px]"></div>
+                    <div class="w-10 h-10 rounded-full bg-red-600/80 -mr-4 blur-[1px]"></div>
                 </div>
             </div>
         </div>
@@ -54,25 +54,51 @@
         <div id="subList" class="space-y-4"></div>
     </div>
 
-    <div id="drawer" class="fixed inset-y-0 right-0 w-64 bg-white dark:bg-slate-900 z-50 shadow-2xl drawer p-6">
-        <button onclick="toggleDrawer()" class="mb-10 text-gray-400 font-bold">إغلاق ×</button>
-        <nav class="space-y-6">
-            <a href="#" class="flex items-center gap-4 text-blue-600 font-bold"><span class="text-xl">🏠</span> الرئيسية</a>
-            <button onclick="openModal()" class="flex items-center gap-4 text-gray-500"><span class="text-xl">➕</span> إضافة جديد</button>
-            <a href="#" class="flex items-center gap-4 text-gray-500"><span class="text-xl">📊</span> الإحصائيات</a>
-            <button onclick="toggleDarkMode()" class="flex items-center gap-4 text-gray-500"><span class="text-xl text-yellow-500" id="themeIcon">🌙</span> الوضع الليلي</button>
+    <div id="drawer" class="fixed inset-y-0 right-0 w-72 bg-white dark:bg-slate-900 z-50 shadow-2xl drawer p-8 flex flex-col border-r border-gray-100 dark:border-gray-800">
+        <div class="flex justify-between items-center mb-12">
+            <h2 class="font-black text-xl">التنقل</h2>
+            <button onclick="toggleDrawer()" class="text-gray-400 text-2xl">×</button>
+        </div>
+        
+        <nav class="space-y-4 flex-1">
+            <button class="nav-item w-full flex items-center gap-4 p-4 text-blue-600 bg-blue-50/50">
+                <img src="https://cdn-icons-png.flaticon.com/512/1946/1946436.png" class="w-6 h-6">
+                <span class="font-bold">الرئيسية</span>
+            </button>
+            <button onclick="openModal()" class="nav-item w-full flex items-center gap-4 p-4 text-gray-500">
+                <img src="https://cdn-icons-png.flaticon.com/512/1828/1828817.png" class="w-6 h-6">
+                <span class="font-bold">إضافة اشتراك</span>
+            </button>
+            <button class="nav-item w-full flex items-center gap-4 p-4 text-gray-500">
+                <img src="https://cdn-icons-png.flaticon.com/512/3501/3501173.png" class="w-6 h-6">
+                <span class="font-bold">الإحصائيات</span>
+            </button>
+            <button onclick="toggleDarkMode()" class="nav-item w-full flex items-center gap-4 p-4 text-gray-500">
+                <img id="themeIconImg" src="https://cdn-icons-png.flaticon.com/512/6714/6714978.png" class="w-6 h-6">
+                <span class="font-bold" id="themeText">الوضع الليلي</span>
+            </button>
         </nav>
+
+        <div class="pt-6 border-t border-gray-100">
+            <button onclick="exportData()" class="flex items-center gap-3 text-xs text-gray-400">
+                <img src="https://cdn-icons-png.flaticon.com/512/2874/2874091.png" class="w-4 h-4 opacity-50">
+                نسخة احتياطية
+            </button>
+        </div>
     </div>
 
-    <div id="addModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 hidden items-center justify-center p-5">
-        <div class="glass w-full max-w-sm rounded-[2.5rem] p-8 shadow-2xl">
-            <h3 class="text-xl font-bold mb-6 text-center">اشتراك جديد</h3>
+    <div id="addModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-md z-50 hidden items-center justify-center p-6">
+        <div class="bg-white dark:bg-slate-800 w-full max-w-sm rounded-[2rem] p-8 shadow-2xl">
+            <div class="text-center mb-8">
+                <img src="https://cdn-icons-png.flaticon.com/512/5968/5968812.png" class="w-16 h-16 mx-auto mb-4">
+                <h3 class="text-xl font-black">إضافة اشتراك جديد</h3>
+            </div>
             <div class="space-y-4">
-                <input type="text" id="subName" placeholder="الاسم (Netflix, Spotify...)" class="w-full p-4 rounded-2xl bg-white/50 border-none outline-none focus:ring-2 focus:ring-blue-400">
-                <input type="number" id="subPrice" placeholder="السعر" class="w-full p-4 rounded-2xl bg-white/50 border-none outline-none focus:ring-2 focus:ring-blue-400">
-                <input type="date" id="subDate" class="w-full p-4 rounded-2xl bg-white/50 border-none outline-none focus:ring-2 focus:ring-blue-400">
-                <button onclick="saveSub()" class="w-full bg-blue-600 text-white py-4 rounded-2xl font-bold shadow-lg">حفظ الآن</button>
-                <button onclick="closeModal()" class="w-full text-gray-400 text-sm">تراجع</button>
+                <input type="text" id="subName" placeholder="الخدمة (مثل Netflix)" class="w-full p-4 rounded-2xl bg-gray-100 dark:bg-slate-700 border-none outline-none focus:ring-2 focus:ring-blue-500">
+                <input type="number" id="subPrice" placeholder="السعر" class="w-full p-4 rounded-2xl bg-gray-100 dark:bg-slate-700 border-none outline-none focus:ring-2 focus:ring-blue-500">
+                <input type="date" id="subDate" class="w-full p-4 rounded-2xl bg-gray-100 dark:bg-slate-700 border-none outline-none focus:ring-2 focus:ring-blue-500">
+                <button onclick="saveSub()" class="w-full bg-blue-600 text-white py-4 rounded-2xl font-black shadow-lg shadow-blue-500/40 mt-4">حفظ الاشتراك</button>
+                <button onclick="closeModal()" class="w-full text-gray-400 font-bold text-sm">إلغاء</button>
             </div>
         </div>
     </div>
@@ -85,12 +111,23 @@
         function toggleDarkMode() {
             document.body.classList.toggle('dark-mode');
             const isDark = document.body.classList.contains('dark-mode');
-            document.getElementById('themeIcon').innerText = isDark ? '☀️' : '🌙';
+            document.getElementById('themeIconImg').src = isDark ? 
+                'https://cdn-icons-png.flaticon.com/512/2698/2698194.png' : 
+                'https://cdn-icons-png.flaticon.com/512/6714/6714978.png';
+            document.getElementById('themeText').innerText = isDark ? 'الوضع النهاري' : 'الوضع الليلي';
         }
 
-        // دالة جلب اللوجو التلقائي
+        // جلب اللوجو التلقائي للخدمات الشهيرة
         function getLogo(name) {
             const cleanName = name.toLowerCase().trim();
+            // استخدام مكتبة أيقونات للخدمات المشهورة
+            if(cleanName.includes('netflix')) return 'https://cdn-icons-png.flaticon.com/512/5977/5977590.png';
+            if(cleanName.includes('spotify')) return 'https://cdn-icons-png.flaticon.com/512/2111/2111624.png';
+            if(cleanName.includes('youtube')) return 'https://cdn-icons-png.flaticon.com/512/174/174883.png';
+            if(cleanName.includes('apple')) return 'https://cdn-icons-png.flaticon.com/512/0/747.png';
+            if(cleanName.includes('amazon')) return 'https://cdn-icons-png.flaticon.com/512/5968/5968202.png';
+            if(cleanName.includes('playstation')) return 'https://cdn-icons-png.flaticon.com/512/588/588258.png';
+            
             return `https://logo.clearbit.com/${cleanName}.com?size=100`;
         }
 
@@ -105,17 +142,21 @@
                 const logoUrl = getLogo(sub.name);
                 
                 listDiv.innerHTML += `
-                    <div id="item-${index}" class="sub-item glass p-4 rounded-3xl flex justify-between items-center">
-                        <div class="flex items-center gap-4">
-                            <div class="w-12 h-12 rounded-2xl overflow-hidden bg-white flex items-center justify-center border shadow-sm">
-                                <img src="${logoUrl}" onerror="this.src='https://cdn-icons-png.flaticon.com/512/1048/1048953.png'" class="w-full h-full object-cover">
+                    <div class="glass p-5 rounded-[2rem] flex justify-between items-center transition-all hover:scale-[1.02]">
+                        <div class="flex items-center gap-5">
+                            <div class="w-14 h-14 rounded-2xl overflow-hidden bg-white p-2 border border-gray-100 flex items-center justify-center">
+                                <img src="${logoUrl}" onerror="this.src='https://cdn-icons-png.flaticon.com/512/1048/1048953.png'" class="w-full h-full object-contain">
                             </div>
                             <div>
-                                <h4 class="font-bold text-sm">${sub.name}</h4>
-                                <p class="text-xs text-blue-500 font-bold">${sub.price} SAR</p>
+                                <h4 class="font-black text-slate-800 dark:text-white">${sub.name}</h4>
+                                <p class="text-xs font-bold text-blue-500">${sub.price} SAR</p>
                             </div>
                         </div>
-                        <button onclick="deleteWithAnim(${index})" class="text-red-300 hover:text-red-500 p-2">🗑️</button>
+                        <div class="flex items-center gap-4">
+                            <button onclick="deleteSub(${index})" class="p-2 bg-red-50 dark:bg-red-900/20 rounded-xl">
+                                <img src="https://cdn-icons-png.flaticon.com/512/6861/6861362.png" class="w-5 h-5 opacity-70">
+                            </button>
+                        </div>
                     </div>
                 `;
             });
@@ -127,26 +168,22 @@
             const price = document.getElementById('subPrice').value;
             const date = document.getElementById('subDate').value;
 
-            if(!name || !price || !date) return;
+            if(!name || !price || !date) return alert("أكمل البيانات");
 
             const subs = JSON.parse(localStorage.getItem('mySubs') || '[]');
             subs.push({ name, price, date });
             localStorage.setItem('mySubs', JSON.stringify(subs));
             
-            confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
+            confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 }, colors: ['#3b82f6', '#1e3a8a'] });
             closeModal();
             displaySubs();
         }
 
-        function deleteWithAnim(index) {
-            const el = document.getElementById(`item-${index}`);
-            el.classList.add('deleting');
-            setTimeout(() => {
-                let subs = JSON.parse(localStorage.getItem('mySubs'));
-                subs.splice(index, 1);
-                localStorage.setItem('mySubs', JSON.stringify(subs));
-                displaySubs();
-            }, 300);
+        function deleteSub(i) {
+            let subs = JSON.parse(localStorage.getItem('mySubs'));
+            subs.splice(i, 1);
+            localStorage.setItem('mySubs', JSON.stringify(subs));
+            displaySubs();
         }
 
         displaySubs();
