@@ -3,66 +3,160 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>مدير اشتراكاتي | Sub Manager</title>
+    <title>Sub Manager</title>
     <link rel="manifest" href="manifest.json">
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        body { font-family: system-ui, -apple-system, sans-serif; background-color: #f1f5f9; }
-        .sub-card:hover .delete-btn { opacity: 1; }
+        :root { --bg: #f1f5f9; --card: #ffffff; --text: #1e293b; }
+        .dark-mode { --bg: #0f172a; --card: #1e293b; --text: #f1f5f9; }
+        body { background-color: var(--bg); color: var(--text); transition: all 0.3s ease; }
+        .glass-header { 
+            background: url('https://images.unsplash.com/photo-1534796636912-3b95b3ab5986?auto=format&fit=crop&w=500&q=80');
+            background-size: cover; background-position: center;
+        }
+        .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); align-items: center; justify-content: center; z-index: 50; }
+        .modal.active { display: flex; }
     </style>
 </head>
-<body class="p-5 pb-20">
-    <div class="max-w-md mx-auto">
-        
-        <header class="text-center mb-6">
-            <h1 class="text-3xl font-black text-blue-600">اشتراكاتي</h1>
-            <div class="mt-4 bg-white p-6 rounded-3xl shadow-sm border border-blue-100">
-                <p class="text-gray-500 text-sm font-medium">إجمالي المصاريف الشهرية</p>
-                <h2 id="totalDisplay" class="text-3xl font-black text-blue-800 mt-1">0</h2>
-            </div>
-        </header>
+<body class="pb-24">
 
-        <div class="mb-6 flex gap-2">
-            <div class="flex-1 bg-white p-3 rounded-2xl shadow-sm flex items-center justify-between">
-                <label class="text-xs font-bold text-gray-400">العملة</label>
-                <select id="currencySelect" onchange="changeCurrency()" class="bg-transparent font-bold text-sm outline-none">
-                    <option value="ريال">SAR</option>
-                    <option value="$">USD</option>
-                    <option value="درهم">AED</option>
-                    <option value="د.ك">KWD</option>
-                    <option value="€">EUR</option>
-                </select>
-            </div>
-            <button onclick="exportData()" class="bg-white p-3 rounded-2xl shadow-sm text-xs font-bold text-gray-500 hover:bg-gray-50">
-                حفظ نسخة 💾
-            </button>
-        </div>
-
-        <div class="bg-white p-6 rounded-3xl shadow-md mb-8">
-            <h2 class="font-bold mb-4 text-gray-700">إضافة اشتراك جديد</h2>
-            <div class="space-y-3">
-                <input type="text" id="subName" placeholder="اسم الخدمة (مثلاً: نيتفلكس)" class="w-full p-3 bg-gray-50 border-none rounded-xl outline-none focus:ring-2 focus:ring-blue-400 transition-all">
-                <input type="number" id="subPrice" placeholder="السعر" class="w-full p-3 bg-gray-50 border-none rounded-xl outline-none focus:ring-2 focus:ring-blue-400 transition-all">
-                <input type="date" id="subDate" class="w-full p-3 bg-gray-50 border-none rounded-xl outline-none focus:ring-2 focus:ring-blue-400 transition-all">
-                <button onclick="saveSub()" class="w-full bg-blue-600 text-white py-4 rounded-xl font-bold hover:bg-blue-700 transition shadow-lg shadow-blue-200 active:scale-95">
-                    إضافة للقائمة
-                </button>
+    <div class="glass-header h-48 w-full relative flex items-center justify-center text-white p-6 shadow-lg">
+        <div class="absolute inset-0 bg-blue-900/40 backdrop-blur-[2px]"></div>
+        <div class="relative text-center">
+            <h1 class="text-3xl font-black mb-2">اشتراكاتي</h1>
+            <div class="bg-white/20 backdrop-blur-md p-4 rounded-2xl border border-white/30">
+                <p class="text-xs opacity-80">إجمالي المصاريف</p>
+                <h2 id="totalDisplay" class="text-2xl font-bold">0</h2>
             </div>
         </div>
-
-        <div id="subList" class="space-y-4">
-            </div>
-
     </div>
 
+    <div class="max-w-md mx-auto p-5 -mt-8 relative z-10">
+        
+        <div class="flex gap-2 mb-4">
+            <select id="currencySelect" onchange="changeCurrency()" class="flex-1 p-3 rounded-xl bg-[var(--card)] shadow-sm outline-none font-bold text-sm">
+                <option value="ريال">SAR (ريال)</option>
+                <option value="$">USD ($)</option>
+                <option value="€">EUR (€)</option>
+            </select>
+            <button onclick="exportData()" class="p-3 rounded-xl bg-[var(--card)] shadow-sm">💾</button>
+        </div>
+
+        <div class="bg-[var(--card)] p-6 rounded-3xl shadow-xl space-y-3">
+            <input type="text" id="subName" placeholder="اسم الخدمة" class="w-full p-3 bg-gray-100/50 rounded-xl outline-none border-none dark:text-gray-800">
+            <input type="number" id="subPrice" placeholder="السعر" class="w-full p-3 bg-gray-100/50 rounded-xl outline-none border-none dark:text-gray-800">
+            <input type="date" id="subDate" class="w-full p-3 bg-gray-100/50 rounded-xl outline-none border-none dark:text-gray-800">
+            <button onclick="openNotificationModal()" class="w-full bg-blue-600 text-white py-4 rounded-xl font-bold shadow-lg shadow-blue-500/30">إضافة للقائمة</button>
+        </div>
+
+        <div id="subList" class="mt-8 space-y-4"></div>
+    </div>
+
+    <div id="notifModal" class="modal">
+        <div class="bg-white p-6 rounded-3xl max-w-xs w-full text-center mx-4 shadow-2xl">
+            <h3 class="font-bold text-gray-800 mb-2">ضبط التنبيه 🔔</h3>
+            <p class="text-xs text-gray-500 mb-4">متى تريدنا أن ننبهك قبل موعد الخصم؟</p>
+            <div class="grid grid-cols-2 gap-2 mb-6 text-gray-800">
+                <button onclick="selectNotif(15)" class="notif-opt p-2 border rounded-lg text-sm hover:bg-blue-50">15 يوم</button>
+                <button onclick="selectNotif(7)" class="notif-opt p-2 border rounded-lg text-sm hover:bg-blue-50">7 أيام</button>
+                <button onclick="selectNotif(5)" class="notif-opt p-2 border rounded-lg text-sm hover:bg-blue-50">5 أيام</button>
+                <button onclick="selectNotif(2)" class="notif-opt p-2 border rounded-lg text-sm hover:bg-blue-50">يومين</button>
+            </div>
+            <button onclick="confirmAndSave()" class="w-full bg-blue-600 text-white py-2 rounded-xl font-bold">تأكيد وحفظ</button>
+            <button onclick="closeModal()" class="mt-2 text-xs text-gray-400">إلغاء</button>
+        </div>
+    </div>
+
+    <button onclick="toggleDarkMode()" class="fixed bottom-6 left-6 w-14 h-14 bg-blue-600 rounded-full shadow-2xl flex items-center justify-center text-2xl z-50 animate-bounce">
+        <span id="themeIcon">🌙</span>
+    </button>
+
     <script>
-        // دالة حساب الأيام
-        function getDaysLeft(date) {
-            const today = new Date();
-            today.setHours(0,0,0,0);
-            const target = new Date(date);
-            const diff = target - today;
-            return Math.ceil(diff / (1000 * 60 * 60 * 24));
+        let selectedDays = 2;
+
+        // تبديل الوضع الليلي
+        function toggleDarkMode() {
+            document.body.classList.toggle('dark-mode');
+            const isDark = document.body.classList.contains('dark-mode');
+            document.getElementById('themeIcon').innerText = isDark ? '☀️' : '🌙';
+            localStorage.setItem('theme', isDark ? 'dark' : 'light');
+        }
+
+        // إرسال إشعار حقيقي
+        function sendNotification(title, body) {
+            if (Notification.permission === "granted") {
+                new Notification(title, { body, icon: "icon.png" });
+            }
+        }
+
+        function openNotificationModal() {
+            if(!document.getElementById('subName').value) return alert("أدخل البيانات أولاً");
+            Notification.requestPermission().then(perm => {
+                document.getElementById('notifModal').classList.add('active');
+            });
+        }
+
+        function selectNotif(days) {
+            selectedDays = days;
+            document.querySelectorAll('.notif-opt').forEach(btn => btn.classList.remove('bg-blue-100', 'border-blue-500'));
+            event.target.classList.add('bg-blue-100', 'border-blue-500');
+        }
+
+        function closeModal() { document.getElementById('notifModal').classList.remove('active'); }
+
+        function confirmAndSave() {
+            const name = document.getElementById('subName').value;
+            const price = document.getElementById('subPrice').value;
+            const date = document.getElementById('subDate').value;
+            
+            const subs = JSON.parse(localStorage.getItem('mySubs') || '[]');
+            subs.push({ name, price, date, remindBefore: selectedDays });
+            localStorage.setItem('mySubs', JSON.stringify(subs));
+            
+            closeModal();
+            displaySubs();
+            sendNotification("تم الإضافة بنجاح", `سنقوم بتنبيهك قبل ${selectedDays} أيام من موعد ${name}`);
+            
+            // تفريغ الحقول
+            document.getElementById('subName').value = '';
+            document.getElementById('subPrice').value = '';
+            document.getElementById('subDate').value = '';
+        }
+
+        function displaySubs() {
+            const subs = JSON.parse(localStorage.getItem('mySubs') || '[]');
+            const currency = localStorage.getItem('userCurrency') || 'ريال';
+            const listDiv = document.getElementById('subList');
+            let total = 0;
+            listDiv.innerHTML = '';
+
+            subs.forEach((sub, index) => {
+                total += parseFloat(sub.price);
+                const diff = Math.ceil((new Date(sub.date) - new Date()) / (1000 * 60 * 60 * 24));
+                
+                listDiv.innerHTML += `
+                    <div class="bg-[var(--card)] p-4 rounded-2xl shadow-sm flex justify-between items-center">
+                        <div>
+                            <h3 class="font-bold">${sub.name}</h3>
+                            <p class="text-xs opacity-60">${sub.price} ${currency}</p>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <span class="text-[10px] px-2 py-1 rounded-lg ${diff <= 3 ? 'bg-red-100 text-red-600' : 'bg-green-100 text-green-600'}">
+                                باقي ${diff} يوم
+                            </span>
+                            <button onclick="deleteSub(${index})" class="text-gray-300">🗑️</button>
+                        </div>
+                    </div>
+                `;
+            });
+            document.getElementById('totalDisplay').innerText = `${total} ${currency}`;
+        }
+
+        function deleteSub(i) {
+            let subs = JSON.parse(localStorage.getItem('mySubs'));
+            subs.splice(i, 1);
+            localStorage.setItem('mySubs', JSON.stringify(subs));
+            displaySubs();
         }
 
         function changeCurrency() {
@@ -70,90 +164,8 @@
             displaySubs();
         }
 
-        function deleteSub(index) {
-            if(confirm('هل تريد حذف هذا الاشتراك؟')) {
-                let subs = JSON.parse(localStorage.getItem('mySubs') || '[]');
-                subs.splice(index, 1);
-                localStorage.setItem('mySubs', JSON.stringify(subs));
-                displaySubs();
-            }
-        }
-
-        function displaySubs() {
-            const subs = JSON.parse(localStorage.getItem('mySubs') || '[]');
-            const currency = localStorage.getItem('userCurrency') || 'ريال';
-            document.getElementById('currencySelect').value = currency;
-            
-            const listDiv = document.getElementById('subList');
-            const totalDisplay = document.getElementById('totalDisplay');
-            listDiv.innerHTML = '';
-            
-            let total = 0;
-
-            subs.sort((a, b) => new Date(a.date) - new Date(b.date)); // ترتيب حسب الأقرب تاريخاً
-
-            subs.forEach((sub, index) => {
-                total += parseFloat(sub.price);
-                const days = getDaysLeft(sub.date);
-                
-                let statusText = `باقي ${days} يوم`;
-                let badgeClass = "bg-green-100 text-green-600";
-                
-                if (days === 0) { statusText = "يستحق اليوم ⚠️"; badgeClass = "bg-orange-100 text-orange-600"; }
-                else if (days < 0) { statusText = "منتهي"; badgeClass = "bg-red-100 text-red-600"; }
-                else if (days <= 3) { badgeClass = "bg-red-100 text-red-600"; }
-
-                listDiv.innerHTML += `
-                    <div class="sub-card bg-white p-4 rounded-2xl shadow-sm flex justify-between items-center border border-transparent hover:border-blue-200 transition-all">
-                        <div class="flex-1">
-                            <h3 class="font-bold text-gray-800">${sub.name}</h3>
-                            <p class="text-sm font-medium text-blue-600">${sub.price} ${currency}</p>
-                        </div>
-                        <div class="text-center px-2">
-                            <span class="text-[10px] font-bold px-3 py-1 rounded-full ${badgeClass}">
-                                ${statusText}
-                            </span>
-                        </div>
-                        <button onclick="deleteSub(${index})" class="delete-btn p-2 text-gray-300 hover:text-red-500 transition">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                            </svg>
-                        </button>
-                    </div>
-                `;
-            });
-
-            totalDisplay.innerText = `${total.toLocaleString()} ${currency}`;
-        }
-
-        function saveSub() {
-            const name = document.getElementById('subName').value;
-            const price = document.getElementById('subPrice').value;
-            const date = document.getElementById('subDate').value;
-
-            if(!name || !price || !date) return alert("الرجاء إكمال البيانات");
-
-            const subs = JSON.parse(localStorage.getItem('mySubs') || '[]');
-            subs.push({ name, price, date });
-            localStorage.setItem('mySubs', JSON.stringify(subs));
-            
-            displaySubs();
-            document.getElementById('subName').value = '';
-            document.getElementById('subPrice').value = '';
-            document.getElementById('subDate').value = '';
-        }
-
-        // ميزة تحميل نسخة احتياطية
-        function exportData() {
-            const data = localStorage.getItem('mySubs');
-            const blob = new Blob([data], { type: 'application/json' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = 'my-subscriptions.json';
-            a.click();
-        }
-
+        // استعادة الوضع الليلي المحفوظ
+        if(localStorage.getItem('theme') === 'dark') toggleDarkMode();
         displaySubs();
     </script>
 </body>
