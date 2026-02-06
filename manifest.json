@@ -1,15 +1,11 @@
 {
-  "name": "مدير اشتراكاتي",
-  "short_name": "SubManager",
-  "start_url": "index.html",
-  "display": "standalone",
-  "background_color": "#ffffff",
-  "theme_color": "#2563eb",
-  "icons": [
-    {
-      "src": "icon.png",
-      "sizes": "512x512",
-      "type": "image/png"
-    }
-  ]
+  "manifest_version": 3,
+  "name": "Sub Manager Pro",
+  "version": "2.0",
+  "description": "إدارة اشتراكاتك بذكاء وتوفير المال",
+  "action": {
+    "default_popup": "index.html",
+    "default_icon": "icon.png"
+  },
+  "permissions": ["storage"]
 }
