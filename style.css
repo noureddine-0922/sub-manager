@@ -1,0 +1,31 @@
+@import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700&display=swap');
+
+body {
+    font-family: 'Tajawal', sans-serif;
+    user-select: none;
+}
+
+.tab-link {
+    color: #94a3b8;
+    cursor: pointer;
+}
+
+.active-tab {
+    background-color: #334155;
+    color: #818cf8 !important;
+    font-weight: bold;
+}
+
+.hidden {
+    display: none;
+}
+
+/* تأثير عند ظهور العناصر */
+.tab-content {
+    animation: fadeIn 0.3s ease-in-out;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
