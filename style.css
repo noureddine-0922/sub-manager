@@ -3,21 +3,17 @@
 body {
     font-family: 'Tajawal', sans-serif;
     background-color: #0f172a;
+    transition: all 0.3s ease;
 }
 
-/* حالة القائمة المفتوحة */
-.sidebar-open {
-    width: 280px;
-}
-
-/* حالة القائمة المغلقة */
-.sidebar-closed {
-    width: 80px;
-}
+/* Sidebar States */
+.sidebar-open { width: 280px; }
+.sidebar-closed { width: 85px; }
 
 .sidebar-closed .nav-text, 
+.sidebar-closed .logo-section h1, 
 .sidebar-closed .logo-section p, 
-.sidebar-closed .logo-section h1 {
+.sidebar-closed .footer-section {
     display: none;
 }
 
@@ -33,18 +29,14 @@ body {
     box-shadow: 0 10px 20px -5px rgba(79, 70, 229, 0.4);
 }
 
-.card-glow {
-    box-shadow: 0 0 40px -10px rgba(79, 70, 229, 0.3);
-}
+.card-glow { box-shadow: 0 0 40px -10px rgba(79, 70, 229, 0.3); }
 
 .bg-dots {
     background-image: radial-gradient(#1e293b 1px, transparent 1px);
     background-size: 30px 30px;
 }
 
-.tab-content {
-    animation: fadeIn 0.4s ease-out;
-}
+.tab-content { animation: fadeIn 0.4s ease-out; }
 
 @keyframes fadeIn {
     from { opacity: 0; transform: translateY(10px); }
