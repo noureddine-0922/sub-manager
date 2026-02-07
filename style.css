@@ -1,31 +1,56 @@
-@import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700;900&display=swap');
 
 body {
     font-family: 'Tajawal', sans-serif;
-    user-select: none;
+    background-color: #0f172a;
 }
 
-.tab-link {
-    color: #94a3b8;
-    cursor: pointer;
+/* حالة القائمة المفتوحة */
+.sidebar-open {
+    width: 280px;
 }
 
-.active-tab {
-    background-color: #334155;
-    color: #818cf8 !important;
-    font-weight: bold;
+/* حالة القائمة المغلقة */
+.sidebar-closed {
+    width: 80px;
 }
 
-.hidden {
+.sidebar-closed .nav-text, 
+.sidebar-closed .logo-section p, 
+.sidebar-closed .logo-section h1 {
     display: none;
 }
 
-/* تأثير عند ظهور العناصر */
+.sidebar-closed .logo-section::after {
+    content: "NXR";
+    font-weight: 900;
+    color: #818cf8;
+}
+
+.tab-link.active-tab {
+    background: #4f46e5;
+    color: white !important;
+    box-shadow: 0 10px 20px -5px rgba(79, 70, 229, 0.4);
+}
+
+.card-glow {
+    box-shadow: 0 0 40px -10px rgba(79, 70, 229, 0.3);
+}
+
+.bg-dots {
+    background-image: radial-gradient(#1e293b 1px, transparent 1px);
+    background-size: 30px 30px;
+}
+
 .tab-content {
-    animation: fadeIn 0.3s ease-in-out;
+    animation: fadeIn 0.4s ease-out;
 }
 
 @keyframes fadeIn {
     from { opacity: 0; transform: translateY(10px); }
     to { opacity: 1; transform: translateY(0); }
 }
+
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: #0f172a; }
+::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 10px; }
