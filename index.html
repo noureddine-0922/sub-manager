@@ -3,105 +3,105 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sub Manager Pro</title>
+    <title>Sub Manager Pro | NXR & AI</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
 </head>
 <body class="bg-[#0f172a] text-white overflow-hidden">
 
-    <div class="flex h-screen w-full">
-        <aside class="w-64 bg-[#1e293b] flex flex-col border-l border-slate-700 shadow-2xl">
-            <div class="p-6 text-center border-b border-slate-700">
-                <h1 class="text-xl font-bold bg-gradient-to-r from-indigo-400 to-purple-400 bg-clip-text text-transparent">Sub Manager</h1>
-                <p class="text-[10px] text-slate-400 mt-1 uppercase tracking-widest">إدارة مالية ذكية</p>
+    <div class="flex h-screen w-full relative">
+        <aside id="sidebar" class="sidebar-open bg-[#1e293b] flex flex-col border-l border-slate-700 shadow-2xl transition-all duration-300 relative">
+            
+            <button onclick="toggleSidebar()" class="absolute -left-4 top-10 bg-indigo-600 w-8 h-8 rounded-full flex items-center justify-center border-4 border-[#0f172a] hover:bg-indigo-500 transition-all z-50">
+                <i id="toggleIcon" class="fas fa-chevron-right text-xs"></i>
+            </button>
+
+            <div class="p-8 text-center border-b border-slate-700 logo-section">
+                <h1 class="text-2xl font-black bg-gradient-to-r from-indigo-400 to-cyan-400 bg-clip-text text-transparent">SUB MANAGER</h1>
+                <p class="text-[10px] text-slate-500 mt-2 uppercase tracking-[0.2em]">Smart Finance v1.0</p>
             </div>
 
-            <nav class="flex-1 p-4 space-y-2">
-                <button onclick="openTab('dashboard')" class="tab-link active-tab w-full flex items-center gap-3 p-3 rounded-xl transition-all">
-                    <i class="fas fa-chart-line w-5"></i> الرئيسية
+            <nav class="flex-1 p-4 space-y-3 mt-4 overflow-x-hidden">
+                <button onclick="openTab('dashboard')" class="tab-link active-tab w-full flex items-center gap-4 p-4 rounded-2xl transition-all">
+                    <i class="fas fa-home-alt text-lg"></i> <span class="nav-text">الرئيسية</span>
                 </button>
-                <button onclick="openTab('subs')" class="tab-link w-full flex items-center gap-3 p-3 rounded-xl transition-all text-slate-400 hover:bg-slate-700">
-                    <i class="fas fa-list-ul w-5"></i> الاشتراكات
+                <button onclick="openTab('subs')" class="tab-link w-full flex items-center gap-4 p-4 rounded-2xl transition-all text-slate-400 hover:bg-slate-800">
+                    <i class="fas fa-credit-card text-lg"></i> <span class="nav-text">الاشتراكات</span>
                 </button>
-                <button onclick="openTab('cemetery')" class="tab-link w-full flex items-center gap-3 p-3 rounded-xl transition-all text-slate-400 hover:bg-slate-700">
-                    <i class="fas fa-tombstone w-5 text-red-400"></i> المقبرة ⚰️
+                <button onclick="openTab('cemetery')" class="tab-link w-full flex items-center gap-4 p-4 rounded-2xl transition-all text-slate-400 hover:bg-slate-800">
+                    <i class="fas fa-chart-pie text-lg text-emerald-400"></i> <span class="nav-text">سجل التوفير</span>
                 </button>
-                <button onclick="openTab('privacy')" class="tab-link w-full flex items-center gap-3 p-3 rounded-xl transition-all text-slate-400 hover:bg-slate-700">
-                    <i class="fas fa-shield-alt w-5 text-green-400"></i> الخصوصية والأمان
+                <button onclick="openTab('privacy')" class="tab-link w-full flex items-center gap-4 p-4 rounded-2xl transition-all text-slate-400 hover:bg-slate-800">
+                    <i class="fas fa-user-lock text-lg text-blue-400"></i> <span class="nav-text">الأمان</span>
                 </button>
             </nav>
 
-            <div class="p-4 border-t border-slate-700">
-                <button onclick="exportToCSV()" class="w-full flex items-center justify-center gap-2 p-2 bg-slate-700 hover:bg-slate-600 rounded-lg text-sm transition-all">
-                    <i class="fas fa-file-export"></i> تصدير البيانات (Excel)
-                </button>
+            <div class="p-6 border-t border-slate-700 text-center">
+                <p class="text-[11px] text-slate-500 font-bold tracking-widest uppercase">Developed by</p>
+                <p class="text-xs text-indigo-400 mt-1 font-black">NXR & AI</p>
             </div>
         </aside>
 
-        <main class="flex-1 overflow-y-auto p-8 relative">
-            <header class="flex justify-between items-center mb-8">
+        <main class="flex-1 overflow-y-auto p-6 md:p-10 relative bg-dots">
+            <header class="flex justify-between items-end mb-10">
                 <div>
-                    <h2 id="tabTitle" class="text-2xl font-bold">الرئيسية</h2>
-                    <p id="currentDate" class="text-slate-400 text-sm mt-1"></p>
+                    <h2 id="tabTitle" class="text-3xl font-bold">لوحة التحكم</h2>
+                    <p id="currentDate" class="text-slate-400 mt-1"></p>
                 </div>
-                <div id="exchangeRateBadge" class="bg-indigo-500/10 border border-indigo-500/20 px-4 py-2 rounded-full text-xs text-indigo-400 font-mono">
-                    1$ = 3.75 SAR (تحديث مباشر)
+                <div id="exchangeRateBadge" class="hidden md:block bg-indigo-500/10 border border-indigo-500/20 px-5 py-2 rounded-2xl text-xs text-indigo-400 font-mono shadow-sm">
+                    1$ = 3.75 SAR
                 </div>
             </header>
 
             <section id="dashboard" class="tab-content">
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-                    <div class="bg-gradient-to-br from-indigo-600 to-indigo-800 p-8 rounded-3xl shadow-xl">
-                        <p class="text-indigo-100 text-sm opacity-80">المصاريف الشهرية</p>
-                        <h3 id="totalMonthly" class="text-4xl font-black mt-2">0.00 ريال</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-10">
+                    <div class="bg-gradient-to-br from-indigo-600 to-purple-800 p-10 rounded-[2.5rem] shadow-2xl relative overflow-hidden card-glow">
+                        <p class="text-indigo-100 text-sm font-medium opacity-80 uppercase tracking-widest">المصاريف الشهرية</p>
+                        <h3 id="totalMonthly" class="text-5xl font-black mt-3 text-white">0.00 ريال</h3>
                     </div>
-                    <div id="smartAlert" class="bg-amber-500/10 border border-amber-500/20 p-6 rounded-3xl flex flex-col justify-center">
-                        <h4 class="text-amber-400 font-bold flex items-center gap-2">
-                            <i class="fas fa-lightbulb"></i> توفير ذكي
-                        </h4>
-                        <p id="alertMessage" class="text-sm text-amber-200/70 mt-2">لا توجد ملاحظات حالياً، استمر في التوفير!</p>
+                    <div id="smartAlert" class="bg-[#1e293b] border border-slate-700 p-8 rounded-[2.5rem] flex flex-col justify-center shadow-lg">
+                        <div class="flex items-center gap-3 text-amber-400 mb-3">
+                            <i class="fas fa-lightbulb"></i>
+                            <h4 class="font-bold text-lg">تحليل ذكي</h4>
+                        </div>
+                        <p id="alertMessage" class="text-slate-400 italic">نظامك المالي تحت السيطرة!</p>
                     </div>
                 </div>
             </section>
 
             <section id="subs" class="tab-content hidden">
-                <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                    <div class="lg:col-span-2 space-y-4" id="subsList">
-                        </div>
-                    <div class="bg-[#1e293b] p-6 rounded-3xl h-fit border border-slate-700">
-                        <h4 class="font-bold mb-4 text-slate-300">إضافة سريعة</h4>
-                        <div class="grid grid-cols-2 gap-3" id="presets">
-                            </div>
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-10">
+                    <div class="lg:col-span-2 space-y-5" id="subsList"></div>
+                    <div class="bg-[#1e293b] p-8 rounded-[2rem] border border-slate-700 shadow-xl h-fit">
+                        <h4 class="font-bold mb-6 text-slate-300">إضافة سريعة</h4>
+                        <div class="grid grid-cols-2 gap-4" id="presets"></div>
+                        <button onclick="customAdd()" class="w-full mt-6 p-4 rounded-xl border border-dashed border-slate-600 text-slate-500 hover:text-indigo-400 hover:border-indigo-400 transition-all text-sm">+ إضافة مخصصة</button>
                     </div>
                 </div>
             </section>
 
-            <section id="cemetery" class="tab-content hidden text-center py-20">
-                <div class="max-w-md mx-auto">
-                    <div class="text-6xl mb-4">⚰️</div>
-                    <h3 class="text-3xl font-bold text-red-400">مقبرة الاشتراكات</h3>
-                    <p class="text-slate-400 mt-2">هنا ترقد الخدمات التي وفرت أموالك بإلغائها</p>
-                    <div class="mt-8 bg-green-500/10 p-4 rounded-xl inline-block border border-green-500/20">
-                        <span class="text-green-400 font-bold">إجمالي التوفير: </span>
-                        <span id="totalSaved" class="text-xl font-black text-green-300">0.00$</span>
+            <section id="cemetery" class="tab-content hidden text-center py-10">
+                <div class="max-w-2xl mx-auto">
+                    <div class="inline-block p-6 bg-emerald-500/10 rounded-3xl mb-6">
+                        <i class="fas fa-hand-holding-usd text-6xl text-emerald-500"></i>
                     </div>
-                    <div id="archivedList" class="mt-10 space-y-3 opacity-60"></div>
+                    <h3 class="text-4xl font-bold text-emerald-400">سجل التوفير الذكي</h3>
+                    <p class="text-slate-400 mt-3 text-lg">مجموع المبالغ التي نجحت في توفيرها</p>
+                    <div class="mt-10 bg-white/5 p-8 rounded-[2rem] border border-white/10 shadow-inner">
+                        <h2 id="totalSaved" class="text-6xl font-black text-white mt-2">0.00 $</h2>
+                    </div>
+                    <div id="archivedList" class="mt-12 space-y-4 max-w-lg mx-auto opacity-70"></div>
                 </div>
             </section>
 
             <section id="privacy" class="tab-content hidden">
-                <div class="max-w-2xl bg-[#1e293b] p-8 rounded-3xl border border-slate-700 shadow-2xl">
-                    <div class="w-16 h-16 bg-green-500/20 rounded-full flex items-center justify-center mb-6">
-                        <i class="fas fa-user-shield text-3xl text-green-500"></i>
-                    </div>
-                    <h3 class="text-2xl font-bold mb-4">بياناتك في أمان</h3>
-                    <div class="space-y-4 text-slate-400 leading-relaxed">
-                        <p class="flex items-start gap-3"><i class="fas fa-check-circle text-green-500 mt-1"></i> يتم تخزين جميع البيانات <b>محلياً</b> على جهازك فقط (Local Storage).</p>
-                        <p class="flex items-start gap-3"><i class="fas fa-check-circle text-green-500 mt-1"></i> لا نطلب منك رقم البطاقة الائتمانية أو كلمات مرور البنك.</p>
-                        <p class="flex items-start gap-3"><i class="fas fa-check-circle text-green-500 mt-1"></i> التطبيق لا يملك قاعدة بيانات سحابية، مما يعني أننا لا نستطيع رؤية ما تملك.</p>
-                        <p class="flex items-start gap-3"><i class="fas fa-check-circle text-green-500 mt-1"></i> يمكنك حذف جميع البيانات بضغطة زر واحدة عبر مسح ذاكرة المتصفح.</p>
-                    </div>
+                <div class="max-w-2xl bg-[#1e293b] p-10 rounded-[3rem] border border-slate-700 shadow-2xl">
+                    <h3 class="text-2xl font-black mb-6 flex items-center gap-3">
+                        <i class="fas fa-shield-check text-green-500"></i> خصوصية NXR & AI
+                    </h3>
+                    <p class="text-slate-400 leading-relaxed mb-6">تطبيق Sub Manager Pro يعمل بشكل مستقل تماماً. لا يتم إرسال أي بيانات إلى خوادم خارجية. بياناتك ملكك، ومخزنة فقط في متصفحك الحالي.</p>
+                    <button onclick="exportToCSV()" class="p-4 bg-indigo-600 hover:bg-indigo-500 rounded-2xl w-full font-bold transition-all shadow-lg shadow-indigo-500/20">تصدير بياناتك الآن (Excel)</button>
                 </div>
             </section>
         </main>
