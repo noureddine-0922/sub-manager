@@ -1,172 +1,118 @@
-/**
- * Sub Manager Pro - Logic v2.0
- * ميزات: جلب عملات، توفير ذكي، أرشفة، تخزين محلي
- */
-
-// 1. تعريف المتغيرات والبيانات
+// 1. البيانات والإعدادات
 let subscriptions = JSON.parse(localStorage.getItem('subs')) || [];
 let archived = JSON.parse(localStorage.getItem('archived')) || [];
-let exchangeRate = 3.75; // سعر افتراضي للريال السعودي
+let exchangeRate = 3.75;
 
-// 2. جلب سعر الصرف من API خارجي
+// قائمة الخدمات الجاهزة (Presets)
+const servicePresets = [
+    { name: 'Netflix', domain: 'netflix.com', price: 15.99 },
+    { name: 'Spotify', domain: 'spotify.com', price: 9.99 },
+    { name: 'YouTube', domain: 'youtube.com', price: 11.99 },
+    { name: 'ChatGPT', domain: 'openai.com', price: 20.00 },
+    { name: 'Amazon', domain: 'amazon.com', price: 14.99 },
+    { name: 'Disney+', domain: 'disneyplus.com', price: 7.99 }
+];
+
+// 2. جلب سعر الصرف
 async function fetchExchangeRate() {
     try {
-        const response = await fetch('https://open.er-api.com/v6/latest/USD');
-        const data = await response.json();
-        
-        if (data && data.rates && data.rates.SAR) {
+        const res = await fetch('https://open.er-api.com/v6/latest/USD');
+        const data = await res.json();
+        if (data && data.rates.SAR) {
             exchangeRate = data.rates.SAR;
-            console.log("تم تحديث سعر الصرف بنجاح");
-            render(); 
+            document.getElementById('exchangeRateBadge').innerText = `1$ = ${exchangeRate.toFixed(2)} SAR (تحديث مباشر)`;
+            render();
         }
-    } catch (error) {
-        console.warn("فشل الاتصال بالـ API، تم استخدام السعر الافتراضي");
-    }
+    } catch (e) { console.warn("Using fallback rate"); }
 }
 
-// 3. التنقل بين التبويبات (Tabs)
+// 3. التنقل بين التبويبات
 function openTab(tabName) {
-    // إخفاء جميع الأقسام
-    document.querySelectorAll('.tab-content').forEach(content => {
-        content.classList.add('hidden');
-    });
+    document.querySelectorAll('.tab-content').forEach(c => c.classList.add('hidden'));
+    document.querySelectorAll('.tab-link').forEach(l => l.classList.remove('active-tab', 'bg-slate-700', 'text-white'));
     
-    // إزالة التنسيق النشط من الأزرار
-    document.querySelectorAll('.tab-link').forEach(link => {
-        link.classList.remove('active-tab');
-    });
-
-    // إظهار القسم المختار وتنشيط الزر
     document.getElementById(tabName).classList.remove('hidden');
-    event.currentTarget.classList.add('active-tab');
+    event.currentTarget.classList.add('active-tab', 'bg-indigo-600', 'text-white');
     
-    render(); // إعادة التحديث عند التنقل
+    const titles = { dashboard: 'الرئيسية', subs: 'إدارة الاشتراكات', cemetery: 'المقبرة', privacy: 'الخصوصية' };
+    document.getElementById('tabTitle').innerText = titles[tabName];
+    render();
 }
 
-// 4. إضافة اشتراك جديد
-function addNewSubPrompt() {
-    const name = prompt("أدخل اسم الخدمة (مثلاً: Netflix):");
-    if (!name) return;
-
-    const price = parseFloat(prompt("أدخل السعر بالدولار ($):"));
-    if (isNaN(price)) {
-        alert("يرجى إدخال رقم صحيح للسعر");
-        return;
-    }
-
+// 4. إضافة اشتراك من القائمة الجاهزة
+function addPreset(index) {
+    const service = servicePresets[index];
     const newSub = {
         id: Date.now(),
-        name: name,
-        price: price,
-        date: new Date().toLocaleDateString('ar-SA')
+        name: service.name,
+        price: service.price,
+        icon: `https://www.google.com/s2/favicons?sz=64&domain=${service.domain}`
     };
-
     subscriptions.push(newSub);
     saveAndRefresh();
 }
 
-// 5. نقل الاشتراك للمقبرة (إلغاء)
-function moveToCemetery(id) {
-    const index = subscriptions.findIndex(s => s.id === id);
-    if (index !== -1) {
-        const sub = subscriptions.splice(index, 1)[0];
-        archived.push(sub);
-        saveAndRefresh();
-        alert(`تم نقل ${sub.name} إلى المقبرة. وداعاً للتبذير! ⚰️`);
-    }
+// 5. تصدير البيانات إلى ملف CSV (Excel)
+function exportToCSV() {
+    let csvContent = "data:text/csv;charset=utf-8,الخدمة,السعر بالدولار,الحالة\n";
+    subscriptions.forEach(s => csvContent += `${s.name},${s.price},نشط\n`);
+    archived.forEach(s => csvContent += `${s.name},${s.price},ملغى\n`);
+
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", "subscriptions_report.csv");
+    document.body.appendChild(link);
+    link.click();
 }
 
-// 6. حفظ البيانات وتحديث الواجهة
+function moveToCemetery(id) {
+    const idx = subscriptions.findIndex(s => s.id === id);
+    archived.push(subscriptions.splice(idx, 1)[0]);
+    saveAndRefresh();
+}
+
 function saveAndRefresh() {
     localStorage.setItem('subs', JSON.stringify(subscriptions));
     localStorage.setItem('archived', JSON.stringify(archived));
     render();
 }
 
-// 7. تحديث واجهة المستخدم (The Core Render Function)
+// 6. التحديث البصري
 function render() {
-    const subsList = document.getElementById('subsList');
-    const archivedList = document.getElementById('archivedList');
-    const totalMonthlyDisplay = document.getElementById('totalMonthly');
-    const totalSavedDisplay = document.getElementById('totalSaved');
-
-    // أ- عرض الاشتراكات النشطة
-    subsList.innerHTML = subscriptions.length === 0 
-        ? '<p class="text-center text-slate-500 py-10">لا توجد اشتراكات نشطة حالياً</p>' 
-        : subscriptions.map(sub => `
-        <div class="bg-slate-800 p-4 rounded-2xl flex justify-between items-center border border-slate-700 hover:border-indigo-500 transition-all shadow-lg">
+    const list = document.getElementById('subsList');
+    list.innerHTML = subscriptions.map(sub => `
+        <div class="bg-[#1e293b] p-5 rounded-2xl flex justify-between items-center border border-slate-700 hover:scale-[1.01] transition-all">
             <div class="flex items-center gap-4">
-                <div class="w-12 h-12 bg-indigo-600 rounded-xl flex items-center justify-center font-bold text-white text-xl shadow-inner">
-                    ${sub.name[0].toUpperCase()}
-                </div>
+                <img src="${sub.icon || 'https://ui-avatars.com/api/?name='+sub.name}" class="w-12 h-12 rounded-xl shadow-lg">
                 <div>
-                    <h4 class="font-bold text-slate-100">${sub.name}</h4>
-                    <p class="text-xs text-slate-400">
-                        $${sub.price.toFixed(2)} 
-                        <span class="text-indigo-400 mr-2 font-mono">≈ ${(sub.price * exchangeRate).toFixed(2)} ريال</span>
-                    </p>
+                    <h4 class="font-bold text-lg">${sub.name}</h4>
+                    <p class="text-xs text-slate-400">$${sub.price} <span class="text-indigo-400">≈ ${(sub.price * exchangeRate).toFixed(2)} ريال</span></p>
                 </div>
             </div>
-            <button onclick="moveToCemetery(${sub.id})" class="text-slate-500 hover:text-red-400 p-2 transition">
-                <i class="fas fa-trash-alt"></i>
-            </button>
+            <button onclick="moveToCemetery(${sub.id})" class="text-slate-500 hover:text-red-400 p-2"><i class="fas fa-trash"></i></button>
         </div>
     `).join('');
 
-    // ب- عرض المقبرة (الأرشيف)
-    archivedList.innerHTML = archived.length === 0
-        ? '<p class="text-center text-slate-600 py-4 italic">المقبرة فارغة.. يبدو أنك كريم جداً!</p>'
-        : archived.map(sub => `
-        <div class="bg-slate-800/50 p-3 rounded-xl flex justify-between items-center border border-red-900/10 mb-2">
-            <span class="text-slate-400 font-medium">${sub.name}</span>
-            <span class="text-[10px] bg-red-900/20 text-red-400 px-3 py-1 rounded-full border border-red-900/30">
-                وفرت $${sub.price}
-            </span>
-        </div>
+    const presetsDiv = document.getElementById('presets');
+    presetsDiv.innerHTML = servicePresets.map((s, i) => `
+        <button onclick="addPreset(${i})" class="flex flex-col items-center p-3 bg-slate-800 rounded-xl hover:bg-slate-700 transition">
+            <img src="https://www.google.com/s2/favicons?sz=64&domain=${s.domain}" class="w-8 h-8 mb-2">
+            <span class="text-[10px] font-bold">${s.name}</span>
+        </button>
     `).join('');
 
-    // ج- حساب الإجماليات
-    const totalUSD = subscriptions.reduce((sum, s) => sum + s.price, 0);
-    totalMonthlyDisplay.innerText = `${(totalUSD * exchangeRate).toFixed(2)} ريال`;
+    const totalUSD = subscriptions.reduce((a, b) => a + b.price, 0);
+    document.getElementById('totalMonthly').innerText = `${(totalUSD * exchangeRate).toFixed(2)} ريال`;
     
-    const savedUSD = archived.reduce((sum, s) => sum + s.price, 0);
-    totalSavedDisplay.innerText = `${savedUSD.toFixed(2)} $`;
-
-    checkSmartInsights();
+    const savedUSD = archived.reduce((a, b) => a + b.price, 0);
+    document.getElementById('totalSaved').innerText = `${savedUSD.toFixed(2)} $`;
+    
+    document.getElementById('archivedList').innerHTML = archived.map(s => `<div class="p-2 border-b border-slate-800 text-slate-500">${s.name} - $${s.price}</div>`).join('');
 }
 
-// 8. منطق التوفير الذكي (Smart Insights)
-function checkSmartInsights() {
-    const alertBox = document.getElementById('smartAlert');
-    const msg = document.getElementById('alertMessage');
-    
-    // مثال بسيط: إذا زاد المبلغ عن 150 ريال شهرياً
-    const totalSAR = subscriptions.reduce((sum, s) => sum + (s.price * exchangeRate), 0);
-    
-    if (totalSAR > 150) {
-        alertBox.classList.remove('hidden');
-        msg.innerText = `مصاريفك تجاوزت 150 ريال. هل راجعت اشتراكاتك مؤخراً؟`;
-    } else if (subscriptions.length > 3) {
-        alertBox.classList.remove('hidden');
-        msg.innerText = `لديك ${subscriptions.length} اشتراكات. تأكد من أنك تستخدمها جميعاً بانتظام.`;
-    } else {
-        alertBox.classList.add('hidden');
-    }
-}
-
-// 9. تشغيل عند تحميل الصفحة
 window.onload = () => {
-    fetchExchangeRate(); // جلب سعر الصرف فور التشغيل
-    
-    const dateElement = document.getElementById('currentDate');
-    if (dateElement) {
-        dateElement.innerText = new Date().toLocaleDateString('ar-SA', { 
-            weekday: 'long', 
-            year: 'numeric', 
-            month: 'long', 
-            day: 'numeric' 
-        });
-    }
-    
+    fetchExchangeRate();
+    document.getElementById('currentDate').innerText = new Date().toLocaleDateString('ar-SA', {weekday: 'long', day: 'numeric', month: 'long'});
     render();
 };
